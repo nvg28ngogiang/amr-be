@@ -1,0 +1,28 @@
+package com.gntech.amrbe.model;
+
+import lombok.Data;
+
+import javax.persistence.*;
+import java.util.List;
+import java.util.Set;
+
+@Data
+@Entity
+@Table(name = "app_user")
+public class AppUser {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "username")
+    private String username;
+
+    @Column(name = "password")
+    private String password;
+
+    @ElementCollection(targetClass = AppUserRole.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    List<AppUserRole> roles;
+}
