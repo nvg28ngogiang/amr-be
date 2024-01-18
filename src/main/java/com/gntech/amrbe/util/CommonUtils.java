@@ -70,4 +70,8 @@ public class CommonUtils {
             }
         }
     }
+
+    public static String createSentencePosition(Long divId, Long paragraphId, Long sentenceId) {
+        return divId + "/" + paragraphId + "/";
+    }
 }
