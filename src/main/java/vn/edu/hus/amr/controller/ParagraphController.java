@@ -25,10 +25,10 @@ public class ParagraphController {
         return paragraphService.getParagraphPagination(userDetails.getUsername(), first, rows, numOfWords);
     }
 
-    @GetMapping("/{divId}/{paragraphId}")
+    @GetMapping(params = {"divId", "paragraphId"})
     public ResponseDTO getAllSentenceOfParagraph(@AuthenticationPrincipal UserDetails userDetails,
-                                                 @PathVariable("divId") Long divId,
-                                                 @PathVariable("paragraphId") Long paragraphId) {
+                                                 @RequestParam(name = "divId") Long divId,
+                                                 @RequestParam(name = "paragraphId") Long paragraphId) {
         return paragraphService.getAllSentenceOfParagraph(userDetails.getUsername(), divId, paragraphId);
     }
 
