@@ -33,3 +33,30 @@ create table amr_tree
     sentence_position varchar(255),
     name varchar(255)
 );
+
+create table amr_word
+(
+    id serial primary key,
+    tree_id bigint,
+    word_id bigint,
+    parent_id bigint,
+    path varchar(1000),
+    word_label varchar(255),
+    amr_label_id int,
+    word_sense_id bigint
+);
+
+create table word_sense
+(
+    id serial primary key,
+    word_content varchar(255),
+    sense varchar(255),
+    example varchar(2000)
+);
+
+create table amr_label
+(
+    id serial primary key,
+    name varchar(255),
+    group_code varchar(255)
+);

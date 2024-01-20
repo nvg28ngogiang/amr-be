@@ -8,10 +8,10 @@
 		<version>2.7.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.gntech</groupId>
-	<artifactId>amr-be</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>amr-be</name>
+	<groupId>vn.edu.hus</groupId>
+	<artifactId>amr</artifactId>
+	<version>1.0.0</version>
+	<name>amr</name>
 	<description>AMR Project </description>
 	<properties>
 		<java.version>1.8</java.version>
