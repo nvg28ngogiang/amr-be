@@ -80,7 +80,7 @@ public class ParagraphServiceImpl implements ParagraphService {
     public ResponseDTO saveUserParagraph(UserParagraphDTO input) {
         try {
             FormResult formResult = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId());
-            List<UserDataDTO> listAssignUsersDB = (List<UserDataDTO>) formResult.getListData();
+            List<UserDataDTO> listAssignUsersDB = (List<UserDataDTO>) formResult.getContent();
             List<Long> listAssignUserIdDB = listAssignUsersDB.stream().map(UserDataDTO::getId).collect(Collectors.toList());
             List<UserDataDTO> listUserInput = input.getUsers();
             List<Long> listUserInputId = listUserInput.stream().map(UserDataDTO::getId).collect(Collectors.toList());

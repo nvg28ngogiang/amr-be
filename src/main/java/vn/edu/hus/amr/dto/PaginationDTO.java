@@ -6,5 +6,5 @@ import lombok.Data;
 public class PaginationDTO {
     private Integer first;
     private Integer rows;
-    private Long totalRecords;
+    private Long totalElements;
 }

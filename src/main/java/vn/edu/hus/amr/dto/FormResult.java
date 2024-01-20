@@ -7,5 +7,5 @@ import java.util.List;
 
 @Data
 public class FormResult extends PaginationDTO {
-    List<?> listData = new ArrayList<>();
+    List<?> content = new ArrayList<>();
 }

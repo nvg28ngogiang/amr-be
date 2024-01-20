@@ -59,8 +59,8 @@ public class SentenceRepositoryCustomImpl implements SentenceRepositoryCustom {
             listResponse.add(item);
         }
 
-        result.setTotalRecords(Long.valueOf(listResponse.size()));
-        result.setListData(listResponse);
+        result.setTotalElements(Long.valueOf(listResponse.size()));
+        result.setContent(listResponse);
         return result;
     }
 

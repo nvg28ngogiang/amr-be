@@ -76,8 +76,8 @@ public class UserServiceImpl implements UserService {
             ).collect(Collectors.toList());
 
             FormResult formResult = new FormResult();
-            formResult.setListData(listDataResponse);
-            formResult.setTotalRecords(Long.valueOf(listDataResponse.size()));
+            formResult.setContent(listDataResponse);
+            formResult.setTotalElements(Long.valueOf(listDataResponse.size()));
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
             log.error(e.getMessage());

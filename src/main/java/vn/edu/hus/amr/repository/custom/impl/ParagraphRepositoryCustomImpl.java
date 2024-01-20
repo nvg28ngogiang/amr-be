@@ -45,7 +45,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
                 queryCount.setParameter(param.getKey(), param.getValue());
             }
         }
-        result.setTotalRecords(((BigInteger) queryCount.getSingleResult()).longValue());
+        result.setTotalElements(((BigInteger) queryCount.getSingleResult()).longValue());
 
         if (first != null && first != -1) {
             result.setFirst(first);
@@ -72,7 +72,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
             item.setContent(obj[2] != null ? obj[2].toString() : "");
             listResponse.add(item);
         }
-        result.setListData(listResponse);
+        result.setContent(listResponse);
 
         return result;
     }
@@ -136,8 +136,8 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
             item.setContent(obj[3] != null ? obj[3].toString() : "");
             listResponse.add(item);
         }
-        result.setListData(listResponse);
-        result.setTotalRecords(Long.valueOf(listResponse.size()));
+        result.setContent(listResponse);
+        result.setTotalElements(Long.valueOf(listResponse.size()));
 
         return result;
     }
@@ -184,8 +184,8 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
             item.setUsername(obj[1] != null ? obj[1].toString() : "");
             listResponse.add(item);
         }
-        result.setListData(listResponse);
-        result.setTotalRecords(Long.valueOf(listResponse.size()));
+        result.setContent(listResponse);
+        result.setTotalElements(Long.valueOf(listResponse.size()));
         return result;
     }
 

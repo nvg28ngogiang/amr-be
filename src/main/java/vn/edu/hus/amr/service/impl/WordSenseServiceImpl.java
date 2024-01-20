@@ -24,8 +24,8 @@ public class WordSenseServiceImpl implements WordSenseService {
         try {
             List<WordSense> listData = wordSenseRepository.getByWordContent(wordContent);
             FormResult formResult = new FormResult();
-            formResult.setListData(listData);
-            formResult.setTotalRecords(Long.valueOf(listData.size()));
+            formResult.setContent(listData);
+            formResult.setTotalElements(Long.valueOf(listData.size()));
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
             log.error(e.getMessage());

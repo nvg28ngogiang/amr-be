@@ -44,8 +44,8 @@ public class SentenceServiceImpl implements SentenceService {
             String sentencePosition = AmrTree.createSentencePosition(divId, paragraphId, sentenceId);
             List<AmrTree> listResponse = amrTreeRepository.getByUserIdAndSentencePosition(appUser.getId(), sentencePosition);
 
-            formResult.setListData(listResponse);
-            formResult.setTotalRecords(Long.valueOf(listResponse.size()));
+            formResult.setContent(listResponse);
+            formResult.setTotalElements(Long.valueOf(listResponse.size()));
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
             log.error(e.getMessage());

@@ -101,8 +101,8 @@ public class AmrServiceImpl implements AmrService {
         try {
             FormResult formResult = new FormResult();
             List<AmrLabel> listData = amrLabelRepository.findAll();
-            formResult.setListData(listData);
-            formResult.setTotalRecords(Long.valueOf(listData.size()));
+            formResult.setContent(listData);
+            formResult.setTotalElements(Long.valueOf(listData.size()));
 
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
