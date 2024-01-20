@@ -31,6 +31,8 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
             params.put("username", username);
         }
 
+        params.put("numOfWords", numOfWords);
+
         sqlCount.append(sql);
         sqlCount.append(" ) b");
 
@@ -82,12 +84,20 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
                 ", a.content " +
                 " from " +
                 "(select div_id, paragraph_id, string_agg(content, ' ') as content  " +
-                " from word " +
+//                " from word " +
+                " FROM (SELECT div_id, " +
+                "             paragraph_id, " +
+                "             content, " +
+                "             row_number() over (partition by div_id, paragraph_id ORDER BY sentence_id, word_order) as rn " +
+                "      FROM word) as tmp " +
+                " WHERE rn <= :numOfWords " +
                 "group by div_id, paragraph_id " +
                 "order by div_id, paragraph_id ) a  " +
                 "join user_paragraph b on a.div_id = b.div_id and a.paragraph_id = b.paragraph_id " +
                 "join app_user c on b.user_id = b.user_id " +
-                "where c.username = :username");
+                "where c.username = :username ");
+
+
 
         return sql;
     }

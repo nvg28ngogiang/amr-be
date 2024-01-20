@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
 
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "success", userDataDTO);
         } catch (AuthenticationException e) {
-            return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, "Username or password is invalid", null);
+            return new ResponseDTO(HttpStatus.UNAUTHORIZED.value(), Constants.STATUS_CODE.ERROR, "Username or password is invalid", null);
         }
     }
 
