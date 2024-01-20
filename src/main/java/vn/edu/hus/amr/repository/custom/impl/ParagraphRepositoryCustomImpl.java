@@ -190,7 +190,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
     }
 
     private StringBuilder generateAssignUsersSQL() {
-        StringBuilder sql = new StringBuilder("select a.id, a.user_name as username " +
+        StringBuilder sql = new StringBuilder("select a.id, a.username as username " +
                 "from app_user a " +
                 "join user_paragraph b on a.id = b.user_id  " +
                 "where b.div_id = :divId and b.paragraph_id = :paragraphId");

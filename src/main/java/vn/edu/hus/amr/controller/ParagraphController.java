@@ -39,14 +39,14 @@ public class ParagraphController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/user-paragrraph/users")
+    @GetMapping("/assign-users")
     public ResponseDTO getAssignUsers(@RequestParam(name = "divId") Long divId,
                                       @RequestParam(name = "paragraphId") Long paragraphId) {
         return paragraphService.getAssignUsers(divId, paragraphId);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/user-paragraph")
+    @PostMapping("/assign-users")
     public ResponseDTO saveUserParagraph(@RequestBody UserParagraphDTO input) {
         return paragraphService.saveUserParagraph(input);
     }
