@@ -78,18 +78,17 @@ public class AmrServiceImpl implements AmrService {
 
             amrWordRepository.saveAll(amrWords);
 
-            Map<Long, AmrWord> mapWordIdAmrNode = amrWords.stream().collect(Collectors.toMap(AmrWord::getWordId, word -> word));
-            // set parent id to amr word
-            amrWords = amrWords.stream().map(word -> {
-                if (word.getParentId() != null) {
-                    if (mapWordIdAmrNode.containsKey(word.getParentId())) {
-                        AmrWord parentNode = mapWordIdAmrNode.get(word.getParentId());
-                        word.setParentId(parentNode.getId());
-                    }
-                }
-                return word;
-            }).collect(Collectors.toList());
-            amrWordRepository.saveAll(amrWords);
+//            Map<Long, AmrWord> mapWordIdAmrNode = amrWords.stream().collect(Collectors.toMap(AmrWord::getWordId, word -> word));
+//            amrWords = amrWords.stream().map(word -> {
+//                if (word.getParentId() != null) {
+//                    if (mapWordIdAmrNode.containsKey(word.getParentId())) {
+//                        AmrWord parentNode = mapWordIdAmrNode.get(word.getParentId());
+//                        word.setParentId(parentNode.getId());
+//                    }
+//                }
+//                return word;
+//            }).collect(Collectors.toList());
+//            amrWordRepository.saveAll(amrWords);
 
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Save success", null);
         } catch (Exception e) {
