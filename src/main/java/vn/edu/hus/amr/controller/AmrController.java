@@ -1,5 +1,7 @@
 package vn.edu.hus.amr.controller;
 
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Authorization;
 import vn.edu.hus.amr.dto.AmrDetailRequestDTO;
 import vn.edu.hus.amr.dto.ResponseDTO;
 import vn.edu.hus.amr.service.AmrService;

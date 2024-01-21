@@ -1,5 +1,6 @@
 package vn.edu.hus.amr.controller;
 
+import org.springframework.security.access.annotation.Secured;
 import vn.edu.hus.amr.dto.ResponseDTO;
 import vn.edu.hus.amr.dto.UserDataDTO;
 import vn.edu.hus.amr.model.AppUser;
@@ -33,8 +34,8 @@ public class AppUserController {
         return userDetails.getUsername();
     }
 
+    @GetMapping("/get-all")
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/users")
     public ResponseDTO getUsers() {
         return userService.getUsers();
     }
