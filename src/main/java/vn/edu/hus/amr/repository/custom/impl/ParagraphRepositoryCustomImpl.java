@@ -149,7 +149,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
                 ", a.sentence_id as sentenceId " +
                 ", a.content  " +
                 " from  " +
-                "(select div_id, paragraph_id, sentence_id, string_agg(content, ' ') as content, " +
+                "(select div_id, paragraph_id, sentence_id, string_agg(content, ' ' order by word_order) as content, " +
                 "count(content) from word  " +
                 "where div_id = :divId and paragraph_id = :paragraphId " +
                 "group by div_id, paragraph_id, sentence_id ) a " +

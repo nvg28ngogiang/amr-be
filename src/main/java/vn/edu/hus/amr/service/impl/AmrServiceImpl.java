@@ -20,7 +20,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -70,13 +72,35 @@ public class AmrServiceImpl implements AmrService {
 
             amrTreeRepository.save(amrTree);
 
+            deleteListExistAmrWord(input.getAmrTreeId());
+
             List<AmrWord> amrWords = createListAmrWord(input.getNodes(), amrTree.getId());
 
             amrWordRepository.saveAll(amrWords);
+
+            Map<Long, AmrWord> mapWordIdAmrNode = amrWords.stream().collect(Collectors.toMap(AmrWord::getWordId, word -> word));
+            // set parent id to amr word
+            amrWords = amrWords.stream().map(word -> {
+                if (word.getParentId() != null) {
+                    if (mapWordIdAmrNode.containsKey(word.getParentId())) {
+                        AmrWord parentNode = mapWordIdAmrNode.get(word.getParentId());
+                        word.setParentId(parentNode.getId());
+                    }
+                }
+                return word;
+            }).collect(Collectors.toList());
+            amrWordRepository.saveAll(amrWords);
+
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Save success", null);
         } catch (Exception e) {
             log.error(e.getMessage());
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
+        }
+    }
+
+    private void deleteListExistAmrWord(Long treeId) {
+        if (treeId != null) {
+            amrWordRepository.deleteByTreeId(treeId);
         }
     }
 
@@ -87,7 +111,6 @@ public class AmrServiceImpl implements AmrService {
 
     private AmrWord mapNodeRequestToAmrWordEntity(AmrNode node) {
         AmrWord amrWord = new AmrWord();
-        amrWord.setId(node.getId());
         amrWord.setWordId(node.getWordId());
         amrWord.setParentId(node.getParentId());
         amrWord.setWordLabel(node.getWordLabel());
