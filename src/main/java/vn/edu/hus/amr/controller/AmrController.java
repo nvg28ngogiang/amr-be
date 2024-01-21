@@ -27,7 +27,7 @@ public class AmrController {
         return amrService.saveOrUpdateAmrTree(userDetails.getUsername(), input);
     }
 
-    @GetMapping("/amr-labels")
+    @GetMapping("/amr/labels")
     public ResponseDTO getAmrLabels() {
         return amrService.getAmrLabels();
     }
