@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AmrWordRepository extends JpaRepository<AmrWord, Long>, AmrDetailRepositoryCustom {
+    public void deleteByTreeId(Long treeId);
 }
