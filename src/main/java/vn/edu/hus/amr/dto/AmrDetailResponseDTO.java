@@ -11,4 +11,5 @@ public class AmrDetailResponseDTO {
     private Long amrLabelId;
     private String amrLabelContent;
     private String wordLabel;
+    private Long wordSenseId;
 }

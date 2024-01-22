@@ -65,6 +65,7 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 ", c.id as \"amrLabelId\" " +
                 ", c.name as \"amrLabelContent\" " +
                 ", a.word_label as \"wordLabel\" " +
+                ", a.word_sense_id as \"wordSenseId\" " +
                 "from amr_word a " +
                 "join word b on a.word_id = b.id " +
                 "join amr_label c on a.amr_label_id = c.id " +
