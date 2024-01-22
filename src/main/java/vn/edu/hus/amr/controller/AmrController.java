@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class AmrController {
     private final AmrService amrService;
 
-    @GetMapping("/amrs/{id}")
+    @GetMapping("/amr/{id}")
     public ResponseDTO getAmrDetail(@AuthenticationPrincipal UserDetails userDetails,
                                     @PathVariable (name = "id") Long id) {
         return amrService.getAmrDetail(userDetails.getUsername(), id);

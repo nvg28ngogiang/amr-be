@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class AmrDetailResponseDTO {
     private Long id;
+    private Long wordId;
     private Long parentId;
     private String wordContent;
     private Long amrLabelId;

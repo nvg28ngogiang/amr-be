@@ -23,7 +23,7 @@ public class SentenceController {
         return sentenceService.getSentenceDetail(userDetails.getUsername(), divId, paragraphId, sentenceId);
     }
 
-    @GetMapping("/sentence/amrs")
+    @GetMapping("/sentences/amrs")
     public ResponseDTO getListAmrOfSentence(@AuthenticationPrincipal UserDetails userDetails,
                                             @RequestParam("divId") Long divId,
                                             @RequestParam("paragraphId") Long paragraphId,

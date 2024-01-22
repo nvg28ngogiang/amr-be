@@ -59,6 +59,7 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
     StringBuilder buildAmrDetailSQL() {
         StringBuilder sql = new StringBuilder("select " +
                 "a.id " +
+                ", a.word_id as \"wordId\" " +
                 ", a.parent_id as \"parentId\" " +
                 ", b.content as \"wordContent\" " +
                 ", c.id as \"amrLabelId\" " +
