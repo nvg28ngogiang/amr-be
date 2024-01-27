@@ -8,4 +8,6 @@ public interface UserService {
     String signup(AppUser appUser);
 
     ResponseDTO getUsers();
+
+    ResponseDTO getUserInfo(String username);
 }

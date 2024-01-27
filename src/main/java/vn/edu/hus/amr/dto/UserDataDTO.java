@@ -11,5 +11,6 @@ public class UserDataDTO {
     private String username;
     private String password;
     private List<AppUserRole> roles;
+    private String name;
     private String token;
 }
