@@ -182,6 +182,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
             item = new UserDataDTO();
             item.setId(Long.parseLong(obj[0].toString()));
             item.setUsername(obj[1] != null ? obj[1].toString() : "");
+            item.setName(obj[2] != null ? obj[2].toString() : "");
             listResponse.add(item);
         }
         result.setContent(listResponse);
@@ -190,7 +191,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
     }
 
     private StringBuilder generateAssignUsersSQL() {
-        StringBuilder sql = new StringBuilder("select a.id, a.username as username " +
+        StringBuilder sql = new StringBuilder("select a.id, a.username as username, a.name " +
                 "from app_user a " +
                 "join user_paragraph b on a.id = b.user_id  " +
                 "where b.div_id = :divId and b.paragraph_id = :paragraphId");

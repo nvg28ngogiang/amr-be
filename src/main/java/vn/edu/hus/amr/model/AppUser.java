@@ -19,6 +19,9 @@ public class AppUser {
     @Column(name = "password")
     private String password;
 
+    @Column(name = "name")
+    private String name;
+
     @ElementCollection(targetClass = AppUserRole.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
