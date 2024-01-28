@@ -11,4 +11,5 @@ public interface UserParagraphRepository extends JpaRepository<UserParagraph, Lo
     UserParagraph getByDivIdAndParagraphIdAndUserId(Long divId, Long paragraphId, Long userId);
 
     List<UserParagraph> findByDivIdAndParagraphIdAndUserIdIn(Long divId, Long paragraphId, List<Long> userIds);
+    List<UserParagraph> findByUserId(Long userId);
 }

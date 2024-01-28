@@ -1,5 +1,6 @@
 package vn.edu.hus.amr.repository.custom.impl;
 
+import lombok.extern.log4j.Log4j2;
 import vn.edu.hus.amr.dto.AmrDetailResponseDTO;
 import vn.edu.hus.amr.dto.FormResult;
 import vn.edu.hus.amr.repository.custom.AmrDetailRepositoryCustom;
@@ -19,6 +20,7 @@ import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
+@Log4j2
 public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom {
     private final EntityManager entityManager;
 
@@ -32,10 +34,14 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
         }
 
         Query query = entityManager.createNativeQuery(sql.toString());
-        if (params.size() > 0) {
-            for (Map.Entry<String, Object> param : params.entrySet()) {
-                query.setParameter(param.getKey(), param.getValue());
+        try {
+            if (params.size() > 0) {
+                for (Map.Entry<String, Object> param : params.entrySet()) {
+                    query.setParameter(param.getKey(), param.getValue());
+                }
             }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
 
         NativeQueryImpl nativeQuery = (NativeQueryImpl) query;
@@ -70,6 +76,60 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 "join word b on a.word_id = b.id " +
                 "join amr_label c on a.amr_label_id = c.id " +
                 "where a.tree_id = :treeId");
+
+        return sql;
+    }
+
+    @Override
+    public FormResult getAmrDetailForExport(String paragraphPositions) {
+        FormResult result = new FormResult();
+        StringBuilder sql = buildAmrDetailForExportSQL(paragraphPositions);
+        Map<String, Object> params = new HashMap<>();
+
+        Query query = entityManager.createNativeQuery(sql.toString());
+
+        NativeQueryImpl nativeQuery = (NativeQueryImpl) query;
+        nativeQuery.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
+
+        List<Map<String, Object>> listObjMap = nativeQuery.getResultList();
+        Field[] fields = AmrDetailResponseDTO.class.getDeclaredFields();
+        AmrDetailResponseDTO item;
+        List<AmrDetailResponseDTO> listResponse = new ArrayList<>();
+        for (Map<String, Object> objMap : listObjMap) {
+            item = new AmrDetailResponseDTO();
+            CommonUtils.convertMapResultToObject(objMap, fields, item);
+            if (item.getWordOrder() == null || item.getWordOrder() != 1L) {
+                item.setSentencePosition(null);
+            } else {
+                item.setSentencePosition(formatSentencePosition(item.getSentencePosition()));
+            }
+            listResponse.add(item);
+        }
+
+        result.setTotalElements(Long.valueOf(listResponse.size()));
+        result.setContent(listResponse);
+        return result;
+    }
+
+    private String formatSentencePosition(String sentencePosition) {
+        String[] parts = sentencePosition.split("/");
+        return String.format("d%sp%ss%s", parts[0], parts[1], parts[2]);
+    }
+
+    StringBuilder buildAmrDetailForExportSQL(String paragraphPositions) {
+        StringBuilder sql = new StringBuilder("select w.id as \"wordId\", aw.parent_id as \"parentId\", w.content as \"wordContent\", " +
+                "       aw.amr_label_id as \"amrLabelId\", al.name as \"amrLabelContent\", " +
+                "       aw.word_label as \"wordLabel\", aw.word_sense_id as \"wordSenseId\", " +
+                "       w.pos_label as \"posLabel\", ws.sense as \"wordSense\"," +
+                "       at.sentence_position as \"sentencePosition\"," +
+                "       w.word_order as \"wordOrder\" " +
+                "from amr_word aw " +
+                "left join word w on aw.word_id = w.id " +
+                "left join amr_label al on aw.amr_label_id = al.id " +
+                "left join word_sense ws on aw.word_sense_id = ws.id " +
+                "left join amr_tree at on aw.tree_id = at.id " +
+                "where sentence_position similar to '("+ paragraphPositions +")%' " +
+                " order by at.sentence_position, at.id, w.word_order ");
 
         return sql;
     }

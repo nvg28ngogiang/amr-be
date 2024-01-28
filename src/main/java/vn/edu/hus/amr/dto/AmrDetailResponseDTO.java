@@ -12,4 +12,11 @@ public class AmrDetailResponseDTO {
     private String amrLabelContent;
     private String wordLabel;
     private Long wordSenseId;
+
+    private String posLabel;
+    private String wordSense;
+
+    private String sentencePosition;
+
+    private Long wordOrder;
 }

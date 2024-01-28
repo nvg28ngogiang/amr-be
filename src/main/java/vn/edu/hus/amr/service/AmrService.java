@@ -9,4 +9,6 @@ public interface AmrService {
     ResponseDTO saveOrUpdateAmrTree(String username, AmrDetailRequestDTO input);
 
     ResponseDTO getAmrLabels();
+
+    String export(String username);
 }
