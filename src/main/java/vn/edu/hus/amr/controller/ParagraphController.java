@@ -15,13 +15,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ParagraphController {
     private final ParagraphService paragraphService;
+
     @GetMapping
     public ResponseDTO getParagraphPagin(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(name = "first") Integer first,
             @RequestParam(name = "rows") Integer rows,
             @RequestParam(name = "numOfWords") Integer numOfWords
-            ) {
+    ) {
         return paragraphService.getParagraphPagination(userDetails.getUsername(), first, rows, numOfWords);
     }
 
@@ -34,7 +35,7 @@ public class ParagraphController {
 
     @PutMapping("/words/{id}/pos-label")
     public ResponseDTO updatePostLavel(@PathVariable("id") Long id,
-            @RequestBody WordRequestDTO input) {
+                                       @RequestBody WordRequestDTO input) {
         return paragraphService.updatePosLabel(id, input);
     }
 
@@ -49,5 +50,17 @@ public class ParagraphController {
     @PostMapping("/assign-users")
     public ResponseDTO saveUserParagraph(@RequestBody UserParagraphDTO input) {
         return paragraphService.saveUserParagraph(input);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/assign-users/create")
+    public ResponseDTO createAssignUsers(@RequestBody UserParagraphDTO input) {
+        return paragraphService.createAssignUsers(input);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/assign-users/delete")
+    public ResponseDTO deleteAssignusers(@RequestBody UserParagraphDTO input) {
+        return paragraphService.deleteAssignUsers(input);
     }
 }

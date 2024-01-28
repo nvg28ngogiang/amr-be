@@ -1,10 +1,12 @@
 package vn.edu.hus.amr.service.impl;
 
 import vn.edu.hus.amr.dto.*;
+import vn.edu.hus.amr.model.AppUser;
 import vn.edu.hus.amr.model.UserParagraph;
 import vn.edu.hus.amr.model.Word;
 import vn.edu.hus.amr.repository.ParagraphRepository;
 import vn.edu.hus.amr.repository.UserParagraphRepository;
+import vn.edu.hus.amr.repository.UserRepository;
 import vn.edu.hus.amr.service.ParagraphService;
 import vn.edu.hus.amr.util.Constants;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +18,14 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Log4j2
 public class ParagraphServiceImpl implements ParagraphService {
+    private final UserRepository userRepository;
     private final ParagraphRepository paragraphRepository;
     private final UserParagraphRepository userParagraphRepository;
     @Override
@@ -109,6 +113,59 @@ public class ParagraphServiceImpl implements ParagraphService {
 
             FormResult formResult1 = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId());
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Update assign user successfully", formResult1);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseDTO createAssignUsers(UserParagraphDTO input) {
+        try {
+            // check user exist in database
+            List<Long> userIds = input.getUsers().stream().map(UserDataDTO::getId).collect(Collectors.toList());
+            List<AppUser> existUsers = userRepository.findByIdIn(userIds);
+            List<Long> existUserIds = existUsers.stream().map(AppUser::getId).collect(Collectors.toList());
+            List<Long> notExistDB = userIds.stream().filter(inputId -> !existUserIds.contains(inputId)).collect(Collectors.toList());
+
+            // check user exist in user-paragraph
+            List<UserParagraph> existUserParagraphs = userParagraphRepository.findByDivIdAndParagraphIdAndUserIdIn(input.getDivId(), input.getParagraphId(), existUserIds);
+            List<Long> existUserParaIds = existUserParagraphs.stream().map(UserParagraph::getUserId).collect(Collectors.toList());
+            List<Long> notExistUserParagraphs = existUserIds.stream().filter(id -> !existUserParaIds.contains(id)).collect(Collectors.toList());
+
+            // save list user
+            UserParagraph item;
+            List<UserParagraph> listInsert = new ArrayList<>();
+            for (Long userId : notExistUserParagraphs) {
+                item = new UserParagraph();
+                item.setDivId(input.getDivId());
+                item.setParagraphId(input.getParagraphId());
+                item.setUserId(userId);
+                listInsert.add(item);
+            }
+
+            userParagraphRepository.saveAll(listInsert);
+            FormResult formResult1 = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId());
+            return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, String.format("Insert %d/%d users", listInsert.size(), userIds.size()), formResult1);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseDTO deleteAssignUsers(UserParagraphDTO input) {
+        try {
+            // check user exist in user-paragraph
+            List<Long> userIds = input.getUsers().stream().map(UserDataDTO::getId).collect(Collectors.toList());
+            List<UserParagraph> existUserParagraphs = userParagraphRepository.findByDivIdAndParagraphIdAndUserIdIn(input.getDivId(), input.getParagraphId(), userIds);
+
+            // delete list user
+            userParagraphRepository.deleteAll(existUserParagraphs);
+            FormResult formResult1 = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId());
+            return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, String.format("Delete %d/%d users", existUserParagraphs.size(), userIds.size()), formResult1);
         } catch (Exception e) {
             log.error(e.getMessage());
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
