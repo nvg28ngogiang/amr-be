@@ -17,4 +17,8 @@ public interface ParagraphService {
     ResponseDTO getAssignUsers(Long divId, Long paragraphId);
 
     ResponseDTO saveUserParagraph(UserParagraphDTO input);
+
+    ResponseDTO createAssignUsers(UserParagraphDTO input);
+
+    ResponseDTO deleteAssignUsers(UserParagraphDTO input);
 }
