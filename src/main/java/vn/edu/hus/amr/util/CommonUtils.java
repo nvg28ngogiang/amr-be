@@ -1,11 +1,16 @@
 package vn.edu.hus.amr.util;
 
 import lombok.extern.log4j.Log4j2;
+import org.apache.poi.ss.usermodel.*;
+import vn.edu.hus.amr.dto.ExcelHeaderDTO;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @Log4j2
@@ -69,5 +74,52 @@ public class CommonUtils {
                 }
             }
         }
+    }
+
+    public static void setHeaderToRowList(Workbook workbook, List<ExcelHeaderDTO> headerList,
+                                          Row headerRow,
+                                          Sheet sheet,
+                                          CellStyle headerCellStyle) {
+        for (int i = 0; i < headerList.size(); i++) {
+            Cell cell = headerRow.createCell(i);
+            ExcelHeaderDTO headerDTO = headerList.get(i);
+            cell.setCellValue(headerDTO.getName());
+            cell.setCellStyle(headerCellStyle);
+            sheet.setColumnWidth(i, headerDTO.getSize());
+        }
+    }
+
+    public static void setDataToRowByList(List<Object> dataList,
+                                          Row row,
+                                          CellStyle stringCellStyle,
+                                          CellStyle dateCellStyle,
+                                          CellStyle numberCellStyle,
+                                          DateFormat df) {
+        for (int i = 0; i < dataList.size(); i++) {
+            row.setHeightInPoints(17);
+
+            Object value = dataList.get(i);
+            Cell cell = row.createCell(i);
+            String cellValue = value.toString();
+
+            if (i == 0) {
+                cell.setCellStyle(dateCellStyle);
+            } else {
+                if (value instanceof Date) {
+                    cell.setCellStyle(dateCellStyle);
+                    cellValue = df.format(value);
+                } else if (value instanceof Number) {
+                    cell.setCellStyle(numberCellStyle);
+                } else {
+                    cell.setCellStyle(stringCellStyle);
+                }
+            }
+
+            cell.setCellValue(cellValue);
+        }
+    }
+
+    public static String getStrDate(Long time, String format) {
+        return new SimpleDateFormat(format).format(new Date(time));
     }
 }
