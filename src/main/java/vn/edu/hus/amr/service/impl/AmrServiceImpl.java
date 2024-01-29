@@ -140,7 +140,7 @@ public class AmrServiceImpl implements AmrService {
         List<UserParagraph> userParagraphs = userParagraphRepository.findByUserId(appUser.getId());
         String paragraphPositions = userParagraphs.stream().map(userParagraph -> userParagraph.getDivId() + "/" + userParagraph.getParagraphId() + "/")
                 .collect(Collectors.joining("|"));
-        List<AmrDetailResponseDTO> listResponse = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(paragraphPositions).getContent();
+        List<AmrDetailResponseDTO> listResponse = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(appUser.getId(), paragraphPositions).getContent();
 
         if (listResponse == null) {
             listResponse = new ArrayList<>();

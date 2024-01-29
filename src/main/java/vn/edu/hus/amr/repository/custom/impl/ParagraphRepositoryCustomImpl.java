@@ -25,7 +25,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
     public FormResult getParagraphPaging(String username, Integer first, Integer rows, Integer numOfWords) {
         FormResult result = new FormResult();
         StringBuilder sqlCount = new StringBuilder("select count(*) from ( ");
-        StringBuilder sql = generateGetPaginSQL();
+        StringBuilder sql = generateGetPagingSQL();
         Map<String, Object> params = new HashMap<>();
         if (StringUtils.isNotNUll(username)) {
             params.put("username", username);
@@ -77,14 +77,13 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
         return result;
     }
 
-    private StringBuilder generateGetPaginSQL() {
+    private StringBuilder generateGetPagingSQL() {
         StringBuilder sql = new StringBuilder("select " +
                 "a.div_id as divId " +
                 ", a.paragraph_id as paragraphId " +
                 ", a.content " +
                 " from " +
                 "(select div_id, paragraph_id, string_agg(content, ' ') as content  " +
-//                " from word " +
                 " FROM (SELECT div_id, " +
                 "             paragraph_id, " +
                 "             content, " +
@@ -92,12 +91,10 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
                 "      FROM word) as tmp " +
                 " WHERE rn <= :numOfWords " +
                 "group by div_id, paragraph_id " +
-                "order by div_id, paragraph_id ) a  " +
+                "order by div_id , paragraph_id) a  " +
                 "join user_paragraph b on a.div_id = b.div_id and a.paragraph_id = b.paragraph_id " +
-                "join app_user c on b.user_id = b.user_id " +
-                "where c.username = :username ");
-
-
+                "join app_user c on c.id = b.user_id " +
+                "where c.username = :username order by a.div_id, a.paragraph_id");
 
         return sql;
     }
@@ -154,7 +151,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
                 "where div_id = :divId and paragraph_id = :paragraphId " +
                 "group by div_id, paragraph_id, sentence_id ) a " +
                 "join user_paragraph b on a.div_id = b.div_id and a.paragraph_id = b.paragraph_id  " +
-                "join app_user c on b.user_id = b.user_id  " +
+                "join app_user c on c.id = b.user_id  " +
                 "where c.username = :username " +
                 "order by a.div_id, a.paragraph_id, a.sentence_id ");
 

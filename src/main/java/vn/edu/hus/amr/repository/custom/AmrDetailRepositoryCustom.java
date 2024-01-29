@@ -5,5 +5,5 @@ import vn.edu.hus.amr.dto.FormResult;
 public interface AmrDetailRepositoryCustom {
     FormResult getAmrDetail(String username, Long treeId);
 
-    FormResult getAmrDetailForExport(String paragraphPositions);
+    FormResult getAmrDetailForExport(Long userId, String paragraphPositions);
 }

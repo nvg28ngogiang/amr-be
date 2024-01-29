@@ -81,12 +81,11 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
     }
 
     @Override
-    public FormResult getAmrDetailForExport(String paragraphPositions) {
+    public FormResult getAmrDetailForExport(Long userId, String paragraphPositions) {
         FormResult result = new FormResult();
         StringBuilder sql = buildAmrDetailForExportSQL(paragraphPositions);
-        Map<String, Object> params = new HashMap<>();
-
         Query query = entityManager.createNativeQuery(sql.toString());
+        query.setParameter("userId", userId);
 
         NativeQueryImpl nativeQuery = (NativeQueryImpl) query;
         nativeQuery.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
@@ -128,7 +127,7 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 "left join amr_label al on aw.amr_label_id = al.id " +
                 "left join word_sense ws on aw.word_sense_id = ws.id " +
                 "left join amr_tree at on aw.tree_id = at.id " +
-                "where sentence_position similar to '("+ paragraphPositions +")%' " +
+                "where at.user_id =:userId and sentence_position similar to '("+ paragraphPositions +")%' " +
                 " order by at.sentence_position, at.id, w.word_order ");
 
         return sql;
