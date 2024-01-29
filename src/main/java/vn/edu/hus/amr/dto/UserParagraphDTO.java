@@ -8,5 +8,6 @@ import java.util.List;
 public class UserParagraphDTO {
     private Long divId;
     private Long paragraphId;
+    private List<Long> userIds;
     private List<UserDataDTO> users;
 }

@@ -121,10 +121,11 @@ public class ParagraphServiceImpl implements ParagraphService {
 
     @Override
     @Transactional
-    public ResponseDTO createAssignUsers(UserParagraphDTO input) {
+    public ResponseDTO addAssignee(UserParagraphDTO input) {
         try {
             // check user exist in database
-            List<Long> userIds = input.getUsers().stream().map(UserDataDTO::getId).collect(Collectors.toList());
+//            List<Long> userIds = input.getUsers().stream().map(UserDataDTO::getId).collect(Collectors.toList());
+            List<Long> userIds = input.getUserIds();
             List<AppUser> existUsers = userRepository.findByIdIn(userIds);
             List<Long> existUserIds = existUsers.stream().map(AppUser::getId).collect(Collectors.toList());
             List<Long> notExistDB = userIds.stream().filter(inputId -> !existUserIds.contains(inputId)).collect(Collectors.toList());
@@ -156,10 +157,11 @@ public class ParagraphServiceImpl implements ParagraphService {
 
     @Override
     @Transactional
-    public ResponseDTO deleteAssignUsers(UserParagraphDTO input) {
+    public ResponseDTO deleteAssignee(UserParagraphDTO input) {
         try {
             // check user exist in user-paragraph
-            List<Long> userIds = input.getUsers().stream().map(UserDataDTO::getId).collect(Collectors.toList());
+//            List<Long> userIds = input.getUsers().stream().map(UserDataDTO::getId).collect(Collectors.toList());
+            List<Long> userIds = input.getUserIds();
             List<UserParagraph> existUserParagraphs = userParagraphRepository.findByDivIdAndParagraphIdAndUserIdIn(input.getDivId(), input.getParagraphId(), userIds);
 
             // delete list user

@@ -55,12 +55,12 @@ public class ParagraphController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/assign-users/create")
     public ResponseDTO createAssignUsers(@RequestBody UserParagraphDTO input) {
-        return paragraphService.createAssignUsers(input);
+        return paragraphService.addAssignee(input);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/assign-users/delete")
+    @DeleteMapping("/assign-users/delete")
     public ResponseDTO deleteAssignusers(@RequestBody UserParagraphDTO input) {
-        return paragraphService.deleteAssignUsers(input);
+        return paragraphService.deleteAssignee(input);
     }
 }

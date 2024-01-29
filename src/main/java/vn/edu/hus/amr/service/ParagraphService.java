@@ -18,7 +18,7 @@ public interface ParagraphService {
 
     ResponseDTO saveUserParagraph(UserParagraphDTO input);
 
-    ResponseDTO createAssignUsers(UserParagraphDTO input);
+    ResponseDTO addAssignee(UserParagraphDTO input);
 
-    ResponseDTO deleteAssignUsers(UserParagraphDTO input);
+    ResponseDTO deleteAssignee(UserParagraphDTO input);
 }
