@@ -25,7 +25,12 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
     public FormResult getParagraphPaging(String username, Integer first, Integer rows, Integer numOfWords) {
         FormResult result = new FormResult();
         StringBuilder sqlCount = new StringBuilder("select count(*) from ( ");
-        StringBuilder sql = generateGetPagingSQL();
+        StringBuilder sql;
+        if (StringUtils.isNotNUll(username)) {
+            sql = generateGetPagingSQL(true);
+        } else {
+            sql = generateGetPagingSQL(false);
+        }
         Map<String, Object> params = new HashMap<>();
         if (StringUtils.isNotNUll(username)) {
             params.put("username", username);
@@ -77,7 +82,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
         return result;
     }
 
-    private StringBuilder generateGetPagingSQL() {
+    private StringBuilder generateGetPagingSQL(boolean isGetByUser) {
         StringBuilder sql = new StringBuilder("select " +
                 "a.div_id as divId " +
                 ", a.paragraph_id as paragraphId " +
@@ -91,10 +96,14 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
                 "      FROM word) as tmp " +
                 " WHERE rn <= :numOfWords " +
                 "group by div_id, paragraph_id " +
-                "order by div_id , paragraph_id) a  " +
-                "join user_paragraph b on a.div_id = b.div_id and a.paragraph_id = b.paragraph_id " +
-                "join app_user c on c.id = b.user_id " +
-                "where c.username = :username order by a.div_id, a.paragraph_id");
+                "order by div_id , paragraph_id) a  ");
+
+        if (isGetByUser) {
+            sql.append(" join user_paragraph b on a.div_id = b.div_id and a.paragraph_id = b.paragraph_id " +
+                    " join app_user c on c.id = b.user_id " +
+                    " where c.username = :username ");
+        }
+        sql.append(" order by a.div_id, a.paragraph_id ");
 
         return sql;
     }

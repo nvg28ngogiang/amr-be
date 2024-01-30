@@ -26,6 +26,15 @@ public class ParagraphController {
         return paragraphService.getParagraphPagination(userDetails.getUsername(), first, rows, numOfWords);
     }
 
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseDTO getAllParagraph(
+            @RequestParam(name = "first") Integer first,
+            @RequestParam(name = "rows") Integer rows,
+            @RequestParam(name = "numOfWords") Integer numOfWords) {
+        return paragraphService.getParagraphPagination(first, rows, numOfWords);
+    }
+
     @GetMapping(params = {"divId", "paragraphId"})
     public ResponseDTO getAllSentenceOfParagraph(@AuthenticationPrincipal UserDetails userDetails,
                                                  @RequestParam(name = "divId") Long divId,

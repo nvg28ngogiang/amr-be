@@ -40,6 +40,17 @@ public class ParagraphServiceImpl implements ParagraphService {
     }
 
     @Override
+    public ResponseDTO getParagraphPagination(Integer first, Integer rows, Integer numOfWords) {
+        try {
+            FormResult formResult = paragraphRepository.getParagraphPaging(null, first, rows, numOfWords);
+            return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
+        }
+    }
+
+    @Override
     public ResponseDTO getAllSentenceOfParagraph(String username, Long divId, Long paragraphId) {
         try {
             FormResult formResult = paragraphRepository.getAllSentenceOfParagraph(username, divId, paragraphId);
