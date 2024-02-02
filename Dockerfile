@@ -12,7 +12,6 @@ RUN --mount=type=cache,target=/root/.m2 ./mvnw package
 FROM eclipse-temurin:11-jre-alpine as development
 WORKDIR /app
 COPY --from=builder /app/target/amr-be-*.jar amr-be.jar
-RUN apk add --no-cache curl
 CMD ["java", "-jar", "-Dspring.profiles.active=dev", "amr-be.jar"]
 
 # Stage 2: Build production image using jre to reduce image size

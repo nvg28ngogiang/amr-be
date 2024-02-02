@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>vn.edu.hus</groupId>
-	<artifactId>amr</artifactId>
+	<artifactId>amr-be</artifactId>
 	<version>1.0.0</version>
-	<name>amr</name>
+	<name>amr-be</name>
 	<description>AMR Project </description>
 	<properties>
 		<java.version>1.8</java.version>
@@ -39,11 +39,6 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.security</groupId>
