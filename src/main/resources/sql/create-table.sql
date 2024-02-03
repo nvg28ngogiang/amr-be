@@ -1,7 +1,8 @@
 create table app_user (
     id serial primary key,
     username varchar(255),
-    password varchar(512)
+    password varchar(512),
+    name varchar(255)
 );
 
 create table user_role (
