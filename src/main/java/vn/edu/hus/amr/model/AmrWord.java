@@ -33,4 +33,7 @@ public class AmrWord {
 
     @Column(name = "word_sense_id")
     private Long wordSenseId;
+
+    @Column(name = "coref_word_id")
+    private Long corefWordId;
 }

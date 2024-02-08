@@ -19,4 +19,6 @@ public class AmrDetailResponseDTO {
     private String sentencePosition;
 
     private Long wordOrder;
+    private String corefWordId;
+    private String corefWordContent;
 }
