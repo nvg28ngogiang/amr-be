@@ -11,4 +11,7 @@ public class AmrNode {
 
     private Long wordId;
     private Long wordSenseId;
+
+    private Long corefWordId;
+    private String corefWOrdContent;
 }

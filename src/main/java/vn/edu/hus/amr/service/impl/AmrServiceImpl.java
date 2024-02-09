@@ -116,6 +116,7 @@ public class AmrServiceImpl implements AmrService {
         amrWord.setWordLabel(node.getWordLabel());
         amrWord.setAmrLabelId(node.getAmrLabelId());
         amrWord.setWordSenseId(node.getWordSenseId());
+        amrWord.setCorefWordId(node.getCorefWordId());
         return amrWord;
     }
 

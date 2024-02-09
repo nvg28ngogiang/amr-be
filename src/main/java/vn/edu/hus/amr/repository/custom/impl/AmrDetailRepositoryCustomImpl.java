@@ -72,9 +72,12 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 ", c.name as \"amrLabelContent\" " +
                 ", a.word_label as \"wordLabel\" " +
                 ", a.word_sense_id as \"wordSenseId\" " +
+                ", crw.id as \"corefWordId\" " +
+                ", crw.content as \"corefWordContent\" " +
                 "from amr_word a " +
                 "join word b on a.word_id = b.id " +
                 "join amr_label c on a.amr_label_id = c.id " +
+                "left join word crw on crw.id = a.coref_word_id " +
                 "where a.tree_id = :treeId");
 
         return sql;
