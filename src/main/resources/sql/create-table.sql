@@ -45,7 +45,8 @@ create table amr_word
     word_label varchar(255),
     amr_label_id int,
     word_sense_id bigint
-    coref_word_id integer
+    corref_id bigint,
+    corref_position varchar(255)
 );
 
 create table word_sense
