@@ -93,7 +93,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
                 "             paragraph_id, " +
                 "             content, " +
                 "             row_number() over (partition by div_id, paragraph_id ORDER BY sentence_id, word_order) as rn " +
-                "      FROM word) as tmp " +
+                "      FROM word where is_additional is not true) as tmp " +
                 " WHERE rn <= :numOfWords " +
                 "group by div_id, paragraph_id " +
                 "order by div_id , paragraph_id) a  ");
@@ -157,7 +157,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
                 " from  " +
                 "(select div_id, paragraph_id, sentence_id, string_agg(content, ' ' order by word_order) as content, " +
                 "count(content) from word  " +
-                "where div_id = :divId and paragraph_id = :paragraphId " +
+                "where is_additional is not true and div_id = :divId and paragraph_id = :paragraphId " +
                 "group by div_id, paragraph_id, sentence_id ) a " +
                 "join user_paragraph b on a.div_id = b.div_id and a.paragraph_id = b.paragraph_id  " +
                 "join app_user c on c.id = b.user_id  " +

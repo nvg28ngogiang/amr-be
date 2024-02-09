@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -57,31 +58,23 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
             listResponse.add(item);
         }
 
+        for (AmrDetailResponseDTO responseDTO : listResponse) {
+            if (Boolean.TRUE.equals(responseDTO.getIsAdditional())) {
+                List<AmrDetailResponseDTO> childNodes = getChildAmrNode(listResponse, responseDTO.getWordId());
+
+                responseDTO.changeToAdditionalWord();
+                if (childNodes != null && !childNodes.isEmpty()) {
+                    for (AmrDetailResponseDTO childNode : childNodes) {
+                        childNode.changeAdditionalParent();
+                    }
+                }
+            }
+        }
+
         result.setTotalElements(Long.valueOf(listResponse.size()));
         result.setContent(listResponse);
         return result;
     }
-
-//    StringBuilder buildAmrDetailSQL() {
-//        StringBuilder sql = new StringBuilder("select " +
-//                "a.id " +
-//                ", a.word_id as \"wordId\" " +
-//                ", a.parent_id as \"parentId\" " +
-//                ", b.content as \"wordContent\" " +
-//                ", c.id as \"amrLabelId\" " +
-//                ", c.name as \"amrLabelContent\" " +
-//                ", a.word_label as \"wordLabel\" " +
-//                ", a.word_sense_id as \"wordSenseId\" " +
-//                ", crw.id as \"corefWordId\" " +
-//                ", crw.content as \"corefWordContent\" " +
-//                "from amr_word a " +
-//                "join word b on a.word_id = b.id " +
-//                "join amr_label c on a.amr_label_id = c.id " +
-//                "left join word crw on crw.id = a.coref_word_id " +
-//                "where a.tree_id = :treeId");
-//
-//        return sql;
-//    }
 
     StringBuilder buildAmrDetailSQL() {
         StringBuilder sql = new StringBuilder("select " +
@@ -95,12 +88,17 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 ", a.word_sense_id as \"wordSenseId\" " +
                 ", a.corref_id as \"correfId\" " +
                 ", a.corref_position as \"correfPosition\" " +
+                ", b.is_additional as \"isAdditional\" " +
                 "from amr_word a " +
                 "join word b on a.word_id = b.id " +
                 "join amr_label c on a.amr_label_id = c.id " +
                 "where a.tree_id = :treeId");
 
         return sql;
+    }
+
+    private List<AmrDetailResponseDTO> getChildAmrNode(List<AmrDetailResponseDTO> all, Long parentId) {
+        return all.stream().filter(node -> parentId.equals(node.getParentId())).collect(Collectors.toList());
     }
 
     @Override

@@ -76,7 +76,7 @@ public class SentenceRepositoryCustomImpl implements SentenceRepositoryCustom {
                 "from word a  " +
                 "join user_paragraph b on a.div_id  = b.div_id and a.paragraph_id = b.paragraph_id " +
                 "join app_user c on b.user_id = c.id " +
-                "where c.username = :username " +
+                "where a.is_additional is not true and c.username = :username " +
                 "and a.div_id = :divId and a.paragraph_id = :paragraphId and a.sentence_id = :sentenceId " +
                 "order by a.word_order ");
         return sql;

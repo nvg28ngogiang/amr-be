@@ -65,6 +65,10 @@ public class CommonUtils {
                             if (o instanceof java.sql.Timestamp) {
                                 f.set(temp, o);
                             }
+                        } else if (type.equals(Boolean.class)) {
+                            if (o instanceof Boolean) {
+                                f.set(temp, o);
+                            }
                         }
                     } else {
                         f.set(temp, null);

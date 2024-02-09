@@ -30,4 +30,7 @@ public class Word {
     @Column(name = "pos_label")
     private String posLabel;
 
+    @Column(name = "is_additional")
+    private boolean isAdditional;
+
 }
