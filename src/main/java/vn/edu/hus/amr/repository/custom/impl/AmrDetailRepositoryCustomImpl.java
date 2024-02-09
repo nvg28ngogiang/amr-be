@@ -62,6 +62,27 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
         return result;
     }
 
+//    StringBuilder buildAmrDetailSQL() {
+//        StringBuilder sql = new StringBuilder("select " +
+//                "a.id " +
+//                ", a.word_id as \"wordId\" " +
+//                ", a.parent_id as \"parentId\" " +
+//                ", b.content as \"wordContent\" " +
+//                ", c.id as \"amrLabelId\" " +
+//                ", c.name as \"amrLabelContent\" " +
+//                ", a.word_label as \"wordLabel\" " +
+//                ", a.word_sense_id as \"wordSenseId\" " +
+//                ", crw.id as \"corefWordId\" " +
+//                ", crw.content as \"corefWordContent\" " +
+//                "from amr_word a " +
+//                "join word b on a.word_id = b.id " +
+//                "join amr_label c on a.amr_label_id = c.id " +
+//                "left join word crw on crw.id = a.coref_word_id " +
+//                "where a.tree_id = :treeId");
+//
+//        return sql;
+//    }
+
     StringBuilder buildAmrDetailSQL() {
         StringBuilder sql = new StringBuilder("select " +
                 "a.id " +
@@ -72,12 +93,11 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 ", c.name as \"amrLabelContent\" " +
                 ", a.word_label as \"wordLabel\" " +
                 ", a.word_sense_id as \"wordSenseId\" " +
-                ", crw.id as \"corefWordId\" " +
-                ", crw.content as \"corefWordContent\" " +
+                ", a.corref_id as \"correfId\" " +
+                ", a.corref_position as \"correfPosition\" " +
                 "from amr_word a " +
                 "join word b on a.word_id = b.id " +
                 "join amr_label c on a.amr_label_id = c.id " +
-                "left join word crw on crw.id = a.coref_word_id " +
                 "where a.tree_id = :treeId");
 
         return sql;
