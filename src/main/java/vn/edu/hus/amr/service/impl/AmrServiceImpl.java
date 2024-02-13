@@ -4,6 +4,10 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
 import vn.edu.hus.amr.dto.*;
 import vn.edu.hus.amr.model.*;
 import vn.edu.hus.amr.repository.*;
@@ -34,6 +38,7 @@ public class AmrServiceImpl implements AmrService {
     private final UserRepository userRepository;
     private final AmrLabelRepository amrLabelRepository;
     private final WordRepository wordRepository;
+    private final ParagraphRepository paragraphRepository;
 
     private final UserParagraphRepository userParagraphRepository;
     @Override
@@ -258,6 +263,116 @@ public class AmrServiceImpl implements AmrService {
         result.add(data.getWordSenseId() != null ? data.getWordSenseId() : "");
         result.add(data.getWordSense() != null ? data.getWordSense() : "");
         result.add(data.getWordLabel() != null ? data.getWordLabel() : "");
+        return result;
+    }
+
+    @Override
+    public String exportDocxFile(String username) {
+        List<SentenceDTO> sentenceDTOs = paragraphRepository.getAllSentenceOfUserHaveAmr(username);
+
+        AppUser appUser = userRepository.findByUsername(username);
+        List<UserParagraph> userParagraphs = userParagraphRepository.findByUserId(appUser.getId());
+        String paragraphPositions = userParagraphs.stream().map(userParagraph -> userParagraph.getDivId() + "/" + userParagraph.getParagraphId() + "/")
+                .collect(Collectors.joining("|"));
+        List<AmrDetailResponseDTO> allNodes = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(appUser.getId(), paragraphPositions).getContent();
+
+        List<SentenceAndAMRTree> sentenceAndAMRTrees = createSentenceAndAmrTrees(sentenceDTOs, allNodes);
+        for (SentenceAndAMRTree sentenceAndAMRTree : sentenceAndAMRTrees) {
+            System.out.println(sentenceAndAMRTree.getSentenceContentAndAmrTreeText());
+        }
+
+        XWPFDocument doc = new XWPFDocument();
+
+        writeInDocFile(doc, sentenceAndAMRTrees);
+
+        String path = "./report_out/amr_data/";
+
+        File dir = new File(path);
+
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        path += "AMR_TREE_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_hhmmss") + ".docx";
+        try {
+            // write file
+            FileOutputStream outputStream = new FileOutputStream(path);
+            doc.write(outputStream);
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+        return path;
+    }
+
+    private void writeInDocFile(XWPFDocument doc, List<SentenceAndAMRTree> sentenceAndAMRTrees) {
+        for (int i = 0; i < sentenceAndAMRTrees.size(); i++) {
+            SentenceAndAMRTree sentenceAndAMRTree = sentenceAndAMRTrees.get(i);
+            XWPFParagraph p1 = doc.createParagraph();
+            XWPFRun r1 = p1.createRun();
+            r1.setFontSize(16);
+            r1.setText("- Câu " + (i+1) + ": ");
+            r1.setText(sentenceAndAMRTree.getSentence().getContent());
+            r1.setText("\n");
+
+            XWPFParagraph p2 = doc.createParagraph();
+            XWPFRun r2 = p2.createRun();
+            r2.setFontSize(14);
+
+            for (int j = 0; j < sentenceAndAMRTree.getAmrTrees().size(); j++) {
+                AmrTreeResponseDTO amrTree = sentenceAndAMRTree.getAmrTrees().get(j);
+                r2.setText(" + Cây AMR " + (j+1) + ":\n");
+                r2.setText(amrTree.getAmrText().toString());
+                r2.setText("\n\n");
+            }
+        }
+    }
+
+    private List<SentenceAndAMRTree> createSentenceAndAmrTrees(List<SentenceDTO> sentences, List<AmrDetailResponseDTO> allNodes) {
+        List<SentenceAndAMRTree> result = new ArrayList<>();
+        for (SentenceDTO sentence : sentences) {
+            result.add(new SentenceAndAMRTree(sentence));
+        }
+
+        Map<Long, List<AmrDetailResponseDTO>> mapNode = new HashMap<>();
+
+        List<AmrDetailResponseDTO> listNode;
+        for (AmrDetailResponseDTO node : allNodes) {
+            if (mapNode.containsKey(node.getTreeId())) {
+                listNode = mapNode.get(node.getTreeId());
+                listNode.add(node);
+            } else {
+                listNode = new ArrayList<>();
+                listNode.add(node);
+                mapNode.put(node.getTreeId(), listNode);
+            }
+        }
+
+        Map<String, List<AmrTreeResponseDTO>> mapTree = new HashMap<>();
+        List<AmrTreeResponseDTO> listTree;
+        for (Map.Entry<Long, List<AmrDetailResponseDTO>> entry : mapNode.entrySet()) {
+            AmrTreeResponseDTO amrTree = new AmrTreeResponseDTO(entry.getValue());
+
+            if (mapTree.containsKey(amrTree.getSentencePosition())) {
+                listTree = mapTree.get(amrTree.getSentencePosition());
+                listTree.add(amrTree);
+            } else {
+                listTree = new ArrayList<>();
+                listTree.add(amrTree);
+                mapTree.put(amrTree.getSentencePosition(), listTree);
+            }
+        }
+
+        SentenceDTO sentence;
+        String sentencePosition;
+        for (SentenceAndAMRTree item : result) {
+            sentence = item.getSentence();
+            sentencePosition = String.format("d%sp%ss%s", sentence.getDivId(), sentence.getParagraphId(), sentence.getSentenceId());
+            if (mapTree.containsKey(sentencePosition)) {
+                item.setAmrTrees(mapTree.get(sentencePosition));
+            }
+        }
+
         return result;
     }
 }

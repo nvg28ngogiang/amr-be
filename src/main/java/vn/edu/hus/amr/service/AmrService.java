@@ -11,4 +11,6 @@ public interface AmrService {
     ResponseDTO getAmrLabels();
 
     String export(String username);
+
+    String exportDocxFile(String username);
 }

@@ -91,7 +91,7 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 ", b.is_additional as \"isAdditional\" " +
                 "from amr_word a " +
                 "join word b on a.word_id = b.id " +
-                "join amr_label c on a.amr_label_id = c.id " +
+                "left join amr_label c on a.amr_label_id = c.id " +
                 "where a.tree_id = :treeId");
 
         return sql;
@@ -137,7 +137,8 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
     }
 
     StringBuilder buildAmrDetailForExportSQL(String paragraphPositions) {
-        StringBuilder sql = new StringBuilder("select w.id as \"wordId\", aw.parent_id as \"parentId\", w.content as \"wordContent\", " +
+        StringBuilder sql = new StringBuilder("select w.id as \"wordId\", aw.parent_id as \"parentId\", " +
+                "       w.content as \"wordContent\", aw.tree_id as \"treeId\", " +
                 "       aw.amr_label_id as \"amrLabelId\", al.name as \"amrLabelContent\", " +
                 "       aw.word_label as \"wordLabel\", aw.word_sense_id as \"wordSenseId\", " +
                 "       w.pos_label as \"posLabel\", ws.sense as \"wordSense\"," +

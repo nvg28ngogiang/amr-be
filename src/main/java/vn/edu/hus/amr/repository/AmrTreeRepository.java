@@ -10,4 +10,6 @@ import java.util.List;
 public interface AmrTreeRepository extends JpaRepository<AmrTree, Long> {
 
     List<AmrTree> getByUserIdAndSentencePosition(Long userId, String sentencePosition);
+
+    List<AmrTree> getByUserId(Long userId);
 }
