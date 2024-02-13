@@ -33,6 +33,7 @@ public class AmrServiceImpl implements AmrService {
     private final AmrWordRepository amrWordRepository;
     private final UserRepository userRepository;
     private final AmrLabelRepository amrLabelRepository;
+    private final WordRepository wordRepository;
 
     private final UserParagraphRepository userParagraphRepository;
     @Override
@@ -73,29 +74,62 @@ public class AmrServiceImpl implements AmrService {
 
             amrTreeRepository.save(amrTree);
 
+            // delete all additional word belong to amr tree
+            if (input.getAmrTreeId() != null) {
+                List<Word> additionalWords = wordRepository.findByTreeId(input.getAmrTreeId());
+                if (additionalWords != null && !additionalWords.isEmpty()) {
+                    wordRepository.deleteAll(additionalWords);
+                }
+            }
+
+            // if exist additional word, save them into word table
+            List<AmrNode> additionalAmrNodes = getAdditionalNodes(input.getNodes());
+            if (additionalAmrNodes != null && !additionalAmrNodes.isEmpty()) {
+                Word newWord;
+                for (AmrNode node : additionalAmrNodes) {
+                    newWord = createNewWordFromNode(input.getDivId(), input.getParagraphId(), input.getSentenceId(), node);
+                    wordRepository.save(newWord);
+                    List<AmrNode> childNodes = getChildNodes(input.getNodes(), node.getWordId());
+                    for (AmrNode childNode : childNodes) {
+                        childNode.setParentId(newWord.getId());
+                    }
+                    node.setWordId(newWord.getId());
+                }
+            }
+
+            // remove exist amr word
             deleteListExistAmrWord(input.getAmrTreeId());
 
+            // create new list amr word
             List<AmrWord> amrWords = createListAmrWord(input.getNodes(), amrTree.getId());
 
+            // save list amr word
             amrWordRepository.saveAll(amrWords);
-
-//            Map<Long, AmrWord> mapWordIdAmrNode = amrWords.stream().collect(Collectors.toMap(AmrWord::getWordId, word -> word));
-//            amrWords = amrWords.stream().map(word -> {
-//                if (word.getParentId() != null) {
-//                    if (mapWordIdAmrNode.containsKey(word.getParentId())) {
-//                        AmrWord parentNode = mapWordIdAmrNode.get(word.getParentId());
-//                        word.setParentId(parentNode.getId());
-//                    }
-//                }
-//                return word;
-//            }).collect(Collectors.toList());
-//            amrWordRepository.saveAll(amrWords);
 
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Save success", null);
         } catch (Exception e) {
             log.error(e.getMessage());
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
+    }
+
+    private Word createNewWordFromNode(Long divId, Long paragraphId, Long sentenceId, AmrNode node) {
+        Word word = new Word();
+        word.setDivId(divId);
+        word.setParagraphId(paragraphId);
+        word.setSentenceId(sentenceId);
+        word.setPosLabel(node.getPosLabel());
+        word.setContent(node.getWordContent());
+        word.setAdditional(true);
+        return word;
+    }
+
+    private List<AmrNode> getChildNodes(List<AmrNode> nodes, Long parentId) {
+        return nodes.stream().filter(node -> parentId.equals(node.getParentId())).collect(Collectors.toList());
+    }
+
+    private List<AmrNode> getAdditionalNodes(List<AmrNode> amrNodes) {
+        return amrNodes.stream().filter(AmrNode::isAdditionalWord).collect(Collectors.toList());
     }
 
     private void deleteListExistAmrWord(Long treeId) {

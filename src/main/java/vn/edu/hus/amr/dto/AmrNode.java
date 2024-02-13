@@ -11,7 +11,13 @@ public class AmrNode {
 
     private Long wordId;
     private Long wordSenseId;
+    private String wordContent;
+    private String posLabel;
 
     private Long correfId;
     private String correfPosition;
+
+    public boolean isAdditionalWord() {
+        return this.wordId < 0;
+    }
 }

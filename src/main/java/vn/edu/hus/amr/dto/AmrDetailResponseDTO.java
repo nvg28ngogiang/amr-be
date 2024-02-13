@@ -21,4 +21,14 @@ public class AmrDetailResponseDTO {
     private Long wordOrder;
     private Long correfId;
     private String correfPosition;
+
+    private Boolean isAdditional;
+
+    public void changeToAdditionalWord() {
+        this.wordId = -this.wordId;
+    }
+
+    public void changeAdditionalParent() {
+        this.parentId = -this.parentId;
+    }
 }

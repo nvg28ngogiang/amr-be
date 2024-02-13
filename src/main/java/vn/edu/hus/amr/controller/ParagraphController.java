@@ -17,7 +17,7 @@ public class ParagraphController {
     private final ParagraphService paragraphService;
 
     @GetMapping
-    public ResponseDTO getParagraphPagin(
+    public ResponseDTO getParagraphPaging (
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(name = "first") Integer first,
             @RequestParam(name = "rows") Integer rows,
