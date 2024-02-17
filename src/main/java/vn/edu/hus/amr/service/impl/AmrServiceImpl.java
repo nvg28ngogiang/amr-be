@@ -178,10 +178,7 @@ public class AmrServiceImpl implements AmrService {
     @Override
     public String export(String username) {
         AppUser appUser = userRepository.findByUsername(username);
-        List<UserParagraph> userParagraphs = userParagraphRepository.findByUserId(appUser.getId());
-        String paragraphPositions = userParagraphs.stream().map(userParagraph -> userParagraph.getDivId() + "/" + userParagraph.getParagraphId() + "/")
-                .collect(Collectors.joining("|"));
-        List<AmrDetailResponseDTO> listResponse = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(appUser.getId(), paragraphPositions).getContent();
+        List<AmrDetailResponseDTO> listResponse = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(appUser.getId(), appUser.getRoles()).getContent();
 
         if (listResponse == null) {
             listResponse = new ArrayList<>();
@@ -267,14 +264,11 @@ public class AmrServiceImpl implements AmrService {
     }
 
     @Override
-    public String exportDocxFile(String username) {
+    public String exportDocumentFile(String username) {
         List<SentenceDTO> sentenceDTOs = paragraphRepository.getAllSentenceOfUserHaveAmr(username);
 
         AppUser appUser = userRepository.findByUsername(username);
-        List<UserParagraph> userParagraphs = userParagraphRepository.findByUserId(appUser.getId());
-        String paragraphPositions = userParagraphs.stream().map(userParagraph -> userParagraph.getDivId() + "/" + userParagraph.getParagraphId() + "/")
-                .collect(Collectors.joining("|"));
-        List<AmrDetailResponseDTO> allNodes = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(appUser.getId(), paragraphPositions).getContent();
+        List<AmrDetailResponseDTO> allNodes = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(appUser.getId(), appUser.getRoles()).getContent();
 
         List<SentenceAndAMRTree> sentenceAndAMRTrees = createSentenceAndAmrTrees(sentenceDTOs, allNodes);
         for (SentenceAndAMRTree sentenceAndAMRTree : sentenceAndAMRTrees) {
@@ -313,17 +307,27 @@ public class AmrServiceImpl implements AmrService {
             r1.setFontSize(16);
             r1.setText("- Câu " + (i+1) + ": ");
             r1.setText(sentenceAndAMRTree.getSentence().getContent());
-            r1.setText("\n");
+            r1.addCarriageReturn();
 
             XWPFParagraph p2 = doc.createParagraph();
             XWPFRun r2 = p2.createRun();
             r2.setFontSize(14);
 
+            String amrTest;
+            String[] lines;
             for (int j = 0; j < sentenceAndAMRTree.getAmrTrees().size(); j++) {
                 AmrTreeResponseDTO amrTree = sentenceAndAMRTree.getAmrTrees().get(j);
-                r2.setText(" + Cây AMR " + (j+1) + ":\n");
-                r2.setText(amrTree.getAmrText().toString());
-                r2.setText("\n\n");
+                r2.setText(" + Cây AMR " + (j+1) + ":");
+                r2.addCarriageReturn();
+                amrTest = amrTree.getAmrText().toString();
+                lines = amrTest.split("\n");
+                r2.setText(lines[0]);
+                for (int k = 1; k < lines.length; k++) {
+                    r2.addCarriageReturn();
+                    r2.setText(lines[k]);
+                }
+                r2.addCarriageReturn();
+                r2.addCarriageReturn();
             }
         }
     }

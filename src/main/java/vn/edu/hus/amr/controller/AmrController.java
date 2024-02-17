@@ -80,7 +80,7 @@ public class AmrController {
 
     @GetMapping("/amrs/export/document")
     public ResponseEntity<byte[]> exportDocument(@AuthenticationPrincipal UserDetails userDetails) {
-        String path = amrService.exportDocxFile(userDetails.getUsername());
+        String path = amrService.exportDocumentFile(userDetails.getUsername());
 
         FileInputStream inputStream = null;
         try {

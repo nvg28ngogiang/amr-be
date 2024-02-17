@@ -3,6 +3,8 @@ package vn.edu.hus.amr.repository.custom.impl;
 import lombok.extern.log4j.Log4j2;
 import vn.edu.hus.amr.dto.AmrDetailResponseDTO;
 import vn.edu.hus.amr.dto.FormResult;
+import vn.edu.hus.amr.model.AppUser;
+import vn.edu.hus.amr.model.AppUserRole;
 import vn.edu.hus.amr.repository.custom.AmrDetailRepositoryCustom;
 import vn.edu.hus.amr.util.CommonUtils;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +15,7 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -102,11 +101,13 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
     }
 
     @Override
-    public FormResult getAmrDetailForExport(Long userId, String paragraphPositions) {
+    public FormResult getAmrDetailForExport(Long userId, List<AppUserRole> userRoles) {
         FormResult result = new FormResult();
-        StringBuilder sql = buildAmrDetailForExportSQL(paragraphPositions);
+        StringBuilder sql = buildAmrDetailForExportSQL(userRoles);
         Query query = entityManager.createNativeQuery(sql.toString());
-        query.setParameter("userId", userId);
+        if (!userRoles.contains(AppUserRole.ADMIN)) {
+            query.setParameter("userId", userId);
+        }
 
         NativeQueryImpl nativeQuery = (NativeQueryImpl) query;
         nativeQuery.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
@@ -115,12 +116,14 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
         Field[] fields = AmrDetailResponseDTO.class.getDeclaredFields();
         AmrDetailResponseDTO item;
         List<AmrDetailResponseDTO> listResponse = new ArrayList<>();
+        String curAmrSentencePosition = "";
         for (Map<String, Object> objMap : listObjMap) {
             item = new AmrDetailResponseDTO();
             CommonUtils.convertMapResultToObject(objMap, fields, item);
-            if (item.getWordOrder() == null || item.getWordOrder() != 1L) {
+            if (Objects.equals(curAmrSentencePosition, item.getSentencePosition() + "/" + item.getTreeId())) {
                 item.setSentencePosition(null);
             } else {
+                curAmrSentencePosition = item.getSentencePosition() + "/" + item.getTreeId();
                 item.setSentencePosition(formatSentencePosition(item.getSentencePosition()));
             }
             listResponse.add(item);
@@ -136,7 +139,7 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
         return String.format("d%sp%ss%s", parts[0], parts[1], parts[2]);
     }
 
-    StringBuilder buildAmrDetailForExportSQL(String paragraphPositions) {
+    StringBuilder buildAmrDetailForExportSQL(List<AppUserRole> userRoles) {
         StringBuilder sql = new StringBuilder("select w.id as \"wordId\", aw.parent_id as \"parentId\", " +
                 "       w.content as \"wordContent\", aw.tree_id as \"treeId\", " +
                 "       aw.amr_label_id as \"amrLabelId\", al.name as \"amrLabelContent\", " +
@@ -148,10 +151,16 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 "left join word w on aw.word_id = w.id " +
                 "left join amr_label al on aw.amr_label_id = al.id " +
                 "left join word_sense ws on aw.word_sense_id = ws.id " +
-                "left join amr_tree at on aw.tree_id = at.id " +
-                "where at.user_id =:userId and sentence_position similar to '("+ paragraphPositions +")%' " +
-                " order by at.sentence_position, at.id, w.word_order ");
+                "left join amr_tree at on aw.tree_id = at.id ");
+
+        if (!userRoles.contains(AppUserRole.ADMIN)) {
+            sql.append("where at.user_id =:userId ");
+        }
+
+        sql.append(" order by at.sentence_position, at.id, w.word_order ");
 
         return sql;
     }
+
+
 }

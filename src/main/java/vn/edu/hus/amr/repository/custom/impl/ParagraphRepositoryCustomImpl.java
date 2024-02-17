@@ -6,6 +6,7 @@ import vn.edu.hus.amr.dto.SentenceDTO;
 import vn.edu.hus.amr.dto.UserDataDTO;
 import vn.edu.hus.amr.model.AmrTree;
 import vn.edu.hus.amr.model.AppUser;
+import vn.edu.hus.amr.model.AppUserRole;
 import vn.edu.hus.amr.repository.AmrTreeRepository;
 import vn.edu.hus.amr.repository.UserRepository;
 import vn.edu.hus.amr.repository.custom.ParagraphRepositoryCustom;
@@ -177,7 +178,12 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
     @Override
     public List<SentenceDTO> getAllSentenceOfUserHaveAmr(String username) {
         AppUser appUser = userRepository.findByUsername(username);
-        List<AmrTree> amrTrees = amrTreeRepository.getByUserId(appUser.getId());
+        List<AmrTree> amrTrees;
+        if (appUser.getRoles().contains(AppUserRole.ADMIN)) {
+            amrTrees = amrTreeRepository.findAll();
+        } else {
+            amrTrees = amrTreeRepository.getByUserId(appUser.getId());
+        }
 
         List<SentenceDTO> result = new ArrayList<>();
         if (amrTrees != null && !amrTrees.isEmpty()) {

@@ -12,5 +12,5 @@ public interface AmrService {
 
     String export(String username);
 
-    String exportDocxFile(String username);
+    String exportDocumentFile(String username);
 }
