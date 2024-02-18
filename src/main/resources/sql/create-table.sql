@@ -17,7 +17,8 @@ create table word (
      sentence_id bigint,
      word_order bigint,
      content varchar(512),
-     pos_label varchar(100)
+     pos_label varchar(100),
+     is_additional boolean
 );
 
 create table user_paragraph (

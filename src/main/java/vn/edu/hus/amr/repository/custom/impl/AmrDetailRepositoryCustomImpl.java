@@ -91,7 +91,7 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 ", b.is_additional as \"isAdditional\" " +
                 "from amr_word a " +
                 "join word b on a.word_id = b.id " +
-                "join amr_label c on a.amr_label_id = c.id " +
+                "left join amr_label c on a.amr_label_id = c.id " +
                 "where a.tree_id = :treeId");
 
         return sql;
