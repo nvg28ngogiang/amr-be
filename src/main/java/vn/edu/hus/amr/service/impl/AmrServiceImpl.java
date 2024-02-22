@@ -4,7 +4,6 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -167,6 +166,18 @@ public class AmrServiceImpl implements AmrService {
             List<AmrLabel> listData = amrLabelRepository.findAll();
             formResult.setContent(listData);
             formResult.setTotalElements(Long.valueOf(listData.size()));
+
+            return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
+        }
+    }
+
+    @Override
+    public ResponseDTO statisticUsers() {
+        try {
+            FormResult formResult = amrWordRepository.statisticUsers();
 
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {

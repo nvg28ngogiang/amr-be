@@ -116,4 +116,9 @@ public class AmrController {
         }
         return null;
     }
+
+    @GetMapping("/statistic-users")
+    public ResponseDTO statisticUsers() {
+        return amrService.statisticUsers();
+    }
 }

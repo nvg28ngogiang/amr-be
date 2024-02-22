@@ -9,4 +9,6 @@ public interface AmrDetailRepositoryCustom {
     FormResult getAmrDetail(String username, Long treeId);
 
     FormResult getAmrDetailForExport(Long userId, List<AppUserRole> userRoles);
+
+    FormResult statisticUsers();
 }
