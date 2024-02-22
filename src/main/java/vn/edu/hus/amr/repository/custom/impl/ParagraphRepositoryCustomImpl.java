@@ -4,6 +4,11 @@ import vn.edu.hus.amr.dto.FormResult;
 import vn.edu.hus.amr.dto.ParagraphDTO;
 import vn.edu.hus.amr.dto.SentenceDTO;
 import vn.edu.hus.amr.dto.UserDataDTO;
+import vn.edu.hus.amr.model.AmrTree;
+import vn.edu.hus.amr.model.AppUser;
+import vn.edu.hus.amr.model.AppUserRole;
+import vn.edu.hus.amr.repository.AmrTreeRepository;
+import vn.edu.hus.amr.repository.UserRepository;
 import vn.edu.hus.amr.repository.custom.ParagraphRepositoryCustom;
 import vn.edu.hus.amr.util.StringUtils;
 import lombok.RequiredArgsConstructor;
@@ -12,15 +17,16 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
 public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom {
     private final EntityManager entityManager;
+    private final UserRepository userRepository;
+    private final AmrTreeRepository amrTreeRepository;
+
     @Override
     public FormResult getParagraphPaging(String username, Integer first, Integer rows, Integer numOfWords) {
         FormResult result = new FormResult();
@@ -148,6 +154,8 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
         return result;
     }
 
+
+
     private StringBuilder generateGetAllSentenceOfParagraph() {
         StringBuilder sql = new StringBuilder("select  " +
                 "a.div_id as divId  " +
@@ -163,6 +171,53 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
                 "join app_user c on c.id = b.user_id  " +
                 "where c.username = :username " +
                 "order by a.div_id, a.paragraph_id, a.sentence_id ");
+
+        return sql;
+    }
+
+    @Override
+    public List<SentenceDTO> getAllSentenceOfUserHaveAmr(String username) {
+        AppUser appUser = userRepository.findByUsername(username);
+        List<AmrTree> amrTrees;
+        if (appUser.getRoles().contains(AppUserRole.ADMIN)) {
+            amrTrees = amrTreeRepository.findAll();
+        } else {
+            amrTrees = amrTreeRepository.getByUserId(appUser.getId());
+        }
+
+        List<SentenceDTO> result = new ArrayList<>();
+        if (amrTrees != null && !amrTrees.isEmpty()) {
+            List<String> sentencePositions = amrTrees.stream().map(AmrTree::getSentencePosition).collect(Collectors.toList());
+            StringBuilder sql = generateGetAllSentenceOfUserHaveAmrTree();
+            Query query = entityManager.createNativeQuery(sql.toString());
+            query.setParameter("sentencePositions", sentencePositions);
+
+            List<Object[]> objs = query.getResultList();
+            SentenceDTO item;
+            for (Object[] obj : objs) {
+                item = new SentenceDTO();
+                item.setDivId(obj[0] != null ? Long.valueOf(obj[0].toString()) : null);
+                item.setParagraphId(obj[1] != null ? Long.valueOf(obj[1].toString()) : null);
+                item.setSentenceId(obj[2] != null ? Long.valueOf(obj[2].toString()) : null);
+                item.setContent(obj[3] != null ? obj[3].toString() : "");
+                result.add(item);
+            }
+        }
+        return result;
+    }
+
+    private StringBuilder generateGetAllSentenceOfUserHaveAmrTree() {
+        StringBuilder sql = new StringBuilder("select  " +
+                "a.div_id as divId  " +
+                ", a.paragraph_id as paragraphId " +
+                ", a.sentence_id as sentenceId " +
+                ", a.content  " +
+                " from  " +
+                "(select div_id, paragraph_id, sentence_id, string_agg(content, ' ' order by word_order) as content, " +
+                "count(content) from word  " +
+                "where is_additional is not true " +
+                "group by div_id, paragraph_id, sentence_id ) a " +
+                "WHERE concat(a.div_id, '/', a.paragraph_id, '/', a.sentence_id) in (:sentencePositions)");
 
         return sql;
     }

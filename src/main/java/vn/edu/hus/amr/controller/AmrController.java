@@ -77,4 +77,43 @@ public class AmrController {
         }
         return null;
     }
+
+    @GetMapping("/amrs/export/document")
+    public ResponseEntity<byte[]> exportDocument(@AuthenticationPrincipal UserDetails userDetails) {
+        String path = amrService.exportDocumentFile(userDetails.getUsername());
+
+        FileInputStream inputStream = null;
+        try {
+            if (path != null) {
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+                File file = new File(path);
+                byte[] contentBytes = new byte[(int) file.length()];
+                inputStream = new FileInputStream(file);
+                inputStream.read(contentBytes);
+
+                if (file.delete()) {
+                    System.out.println("File deleted successfully.");
+                } else {
+                    System.out.println("Failed to delete the file.");
+                }
+                headers.set("File", file.getName());
+                headers.set("Content-Disposition", "attachment; filename=" + file.getName());
+                headers.set("Access-Control-Expose-Headers", "File");
+
+                return ResponseEntity.ok().headers(headers).body(contentBytes);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+        return null;
+    }
 }
