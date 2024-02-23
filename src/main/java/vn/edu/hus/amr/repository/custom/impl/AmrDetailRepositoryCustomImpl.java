@@ -3,7 +3,7 @@ package vn.edu.hus.amr.repository.custom.impl;
 import lombok.extern.log4j.Log4j2;
 import vn.edu.hus.amr.dto.AmrDetailResponseDTO;
 import vn.edu.hus.amr.dto.FormResult;
-import vn.edu.hus.amr.model.AppUser;
+import vn.edu.hus.amr.dto.StatisticUserDTO;
 import vn.edu.hus.amr.model.AppUserRole;
 import vn.edu.hus.amr.repository.custom.AmrDetailRepositoryCustom;
 import vn.edu.hus.amr.util.CommonUtils;
@@ -162,5 +162,44 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
         return sql;
     }
 
+    @Override
+    public FormResult statisticUsers() {
+        FormResult result = new FormResult();
+        StringBuilder sql = buildStatisticUserSQL();
+        Query query = entityManager.createNativeQuery(sql.toString());
 
+        NativeQueryImpl nativeQuery = (NativeQueryImpl) query;
+        nativeQuery.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
+
+        List<Map<String, Object>> listObjMap = nativeQuery.getResultList();
+        Field[] fields = StatisticUserDTO.class.getDeclaredFields();
+        StatisticUserDTO item;
+        List<StatisticUserDTO> listResponse = new ArrayList<>();
+        for (Map<String, Object> objMap : listObjMap) {
+            item = new StatisticUserDTO();
+            CommonUtils.convertMapResultToObject(objMap, fields, item);
+            listResponse.add(item);
+        }
+
+        result.setTotalElements(Long.valueOf(listResponse.size()));
+        result.setContent(listResponse);
+        return result;
+    }
+
+    StringBuilder buildStatisticUserSQL() {
+        StringBuilder sql = new StringBuilder("select a.id as \"userId\", a.username, a.name " +
+                ", case when b.total_paragraph is not null then b.total_paragraph else 0 end as \"totalParagraph\" " +
+                ", case when c.total_amr is not null then c.total_amr else 0 end as \"totalAmr\" " +
+                "from " +
+                "app_user a " +
+                "left join ( " +
+                "   select count(*) as total_paragraph, user_id from user_paragraph " +
+                "   group by user_id " +
+                ") b on b.user_id = a.id " +
+                "left join ( " +
+                "   select count(*) as total_amr, user_id from amr_tree group by user_id " +
+                ") c on c.user_id = a.id");
+
+        return sql;
+    }
 }

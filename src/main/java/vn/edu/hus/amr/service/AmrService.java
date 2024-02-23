@@ -13,4 +13,6 @@ public interface AmrService {
     String export(String username);
 
     String exportDocumentFile(String username);
+
+    ResponseDTO statisticUsers();
 }
