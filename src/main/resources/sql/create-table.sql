@@ -45,9 +45,10 @@ create table amr_word
     path varchar(1000),
     word_label varchar(255),
     amr_label_id int,
-    word_sense_id bigint
+    word_sense_id bigint,
     corref_id bigint,
-    corref_position varchar(255)
+    corref_position varchar(255),
+    is_additional boolean
 );
 
 create table word_sense

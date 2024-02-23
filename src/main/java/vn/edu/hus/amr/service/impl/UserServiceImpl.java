@@ -92,11 +92,7 @@ public class UserServiceImpl implements UserService {
         try {
             AppUser appUser = userRepository.findByUsername(username);
             UserDataDTO userDataDTO = mapUserToResponseNoToken(appUser);
-
-            FormResult formResult = new FormResult();
-            formResult.setContent(Collections.singletonList(userDataDTO));
-            formResult.setTotalElements(1L);
-            return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
+            return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", userDataDTO);
         } catch (Exception e) {
             log.error(e.getMessage());
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
