@@ -39,7 +39,7 @@ public class AmrController {
         return amrService.getAmrLabels();
     }
 
-    @GetMapping("/amrs/export")
+    @GetMapping("/amr/export/excel")
     public ResponseEntity<byte[]> export(@AuthenticationPrincipal UserDetails userDetails) {
         String path = amrService.export(userDetails.getUsername());
 
@@ -78,7 +78,7 @@ public class AmrController {
         return null;
     }
 
-    @GetMapping("/amrs/export/document")
+    @GetMapping("/amr/export/document")
     public ResponseEntity<byte[]> exportDocument(@AuthenticationPrincipal UserDetails userDetails) {
         String path = amrService.exportDocumentFile(userDetails.getUsername());
 
@@ -117,7 +117,7 @@ public class AmrController {
         return null;
     }
 
-    @GetMapping("/statistic-users")
+    @GetMapping("/amr/statistic")
     public ResponseDTO statisticUsers() {
         return amrService.statisticUsers();
     }
