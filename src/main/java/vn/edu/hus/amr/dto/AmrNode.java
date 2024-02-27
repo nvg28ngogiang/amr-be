@@ -16,6 +16,7 @@ public class AmrNode {
 
     private Long correfId;
     private String correfPosition;
+    private String englishSense;
 
     public boolean isAdditionalWord() {
         return this.wordId < 0;

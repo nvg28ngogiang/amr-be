@@ -28,6 +28,7 @@ public class AmrDetailResponseDTO {
     private Boolean isAdditional;
     private String username;
     private Date updateTime;
+    private String englishSense;
 
     public void changeToAdditionalWord() {
         this.wordId = -this.wordId;

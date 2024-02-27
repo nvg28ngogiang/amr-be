@@ -88,6 +88,7 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 ", a.corref_id as \"correfId\" " +
                 ", a.corref_position as \"correfPosition\" " +
                 ", b.is_additional as \"isAdditional\" " +
+                ", a.english_sense as \"englishSense\" " +
                 "from amr_word a " +
                 "join word b on a.word_id = b.id " +
                 "left join amr_label c on a.amr_label_id = c.id " +

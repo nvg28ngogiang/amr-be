@@ -37,4 +37,7 @@ public class AmrWord {
     private Long correfId;
 
     private String correfPosition;
+
+    @Column(name = "english_sense")
+    private String englishSense;
 }

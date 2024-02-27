@@ -18,6 +18,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import vn.edu.hus.amr.util.ExcelStyleUtil;
+import vn.edu.hus.amr.util.StringUtils;
 
 import javax.transaction.Transactional;
 import java.io.File;
@@ -157,6 +158,9 @@ public class AmrServiceImpl implements AmrService {
         amrWord.setWordSenseId(node.getWordSenseId());
         amrWord.setCorrefId(node.getCorrefId());
         amrWord.setCorrefPosition(node.getCorrefPosition());
+        if (amrWord.getParentId() == null && StringUtils.isNotNUll(node.getEnglishSense())) {
+            amrWord.setEnglishSense(node.getEnglishSense());
+        }
         return amrWord;
     }
 
