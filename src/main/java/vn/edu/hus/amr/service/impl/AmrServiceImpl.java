@@ -187,18 +187,50 @@ public class AmrServiceImpl implements AmrService {
     }
 
     @Override
-    public String export(String username) {
+    public String exportExcelFile(String username, ExportRequestDTO input) {
         AppUser appUser = userRepository.findByUsername(username);
-        List<AmrDetailResponseDTO> listResponse = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(appUser.getId(), appUser.getRoles()).getContent();
 
-        if (listResponse == null) {
-            listResponse = new ArrayList<>();
+        List<Long> exportUserIds = input.getUserIds();
+
+        List<AppUser> exportUsers = new ArrayList<>();
+        if (exportUserIds == null) {
+            if (appUser.getRoles().contains(AppUserRole.ADMIN)) {
+                exportUsers.addAll(userRepository.findAll());
+            } else {
+                exportUsers.add(appUser);
+            }
+        } else {
+            exportUsers.addAll(userRepository.findByIdIn(exportUserIds));
         }
 
-        return export(listResponse);
+        String targetDirectory = "./report_out/amr_excel_data_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_hhmmss") + "/";
+        writeDataToExcelDirectory(targetDirectory, exportUsers);
+
+        // zip this target directory to file
+        String targetZipFile = "./report_out/" + "AMR_TREE_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_hhmmss") + ".zip";
+        try {
+            CommonUtils.zipDirectory(targetDirectory, targetZipFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // delete target directory
+        CommonUtils.deleteDirectory(new File(targetDirectory));
+        return targetZipFile;
     }
 
-    public String export(List<AmrDetailResponseDTO> listData) {
+    private void writeDataToExcelDirectory(String targetDirectory, List<AppUser> exportUsers) {
+        for (AppUser exportUser : exportUsers) {
+            List<AmrDetailResponseDTO> listResponse = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(exportUser.getId()).getContent();
+            if (listResponse == null) {
+                listResponse = new ArrayList<>();
+            }
+
+            writeDataToExcelFile(listResponse, targetDirectory, exportUser.getUsername());
+        }
+    }
+
+    private void writeDataToExcelFile(List<AmrDetailResponseDTO> listData, String dirPath, String username) {
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet dataSheet = workbook.createSheet("data");
 
@@ -223,13 +255,13 @@ public class AmrServiceImpl implements AmrService {
             CommonUtils.setDataToRowByList(dataObj, row, stringCellStyle, dateCellStyle, numberCellStyle, df);
         }
 
-        String path = "./report_out/amr_data/";
+        String path = dirPath;
         File dir = new File(path);
 
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        path += "AMR_TREE_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_hhmmss") + ".xlsx";
+        path += username + ".xlsx";
 
         try {
             // write file
@@ -240,8 +272,6 @@ public class AmrServiceImpl implements AmrService {
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }
-
-        return path;
     }
 
     private List<ExcelHeaderDTO> generateHeaderList() {
@@ -275,48 +305,80 @@ public class AmrServiceImpl implements AmrService {
     }
 
     @Override
-    public String exportDocumentFile(String username) {
-        List<SentenceDTO> sentenceDTOs = paragraphRepository.getAllSentenceOfUserHaveAmr(username);
+    public String exportDocumentFile(String username, ExportRequestDTO input) {
 
         AppUser appUser = userRepository.findByUsername(username);
-        List<AmrDetailResponseDTO> allNodes = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(appUser.getId(), appUser.getRoles()).getContent();
 
-        List<SentenceAndAMRTree> sentenceAndAMRTrees = createSentenceAndAmrTrees(sentenceDTOs, allNodes);
-        for (SentenceAndAMRTree sentenceAndAMRTree : sentenceAndAMRTrees) {
-            System.out.println(sentenceAndAMRTree.getSentenceContentAndAmrTreeText());
+        List<Long> exportUserIds = input.getUserIds();
+
+        List<AppUser> exportUsers = new ArrayList<>();
+        if (exportUserIds == null) {
+            if (appUser.getRoles().contains(AppUserRole.ADMIN)) {
+                exportUsers.addAll(userRepository.findAll());
+            } else {
+                exportUsers.add(appUser);
+            }
+        } else {
+            exportUsers.addAll(userRepository.findByIdIn(exportUserIds));
         }
 
-        XWPFDocument doc = new XWPFDocument();
+        String targetDirectory = "./report_out/amr_doc_data_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_hhmmss") + "/";
+        writeDataToDocDirectory(targetDirectory, exportUsers);
 
-        writeInDocFile(doc, sentenceAndAMRTrees);
-
-        String path = "./report_out/amr_data/";
-
-        File dir = new File(path);
-
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        path += "AMR_TREE_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_hhmmss") + ".docx";
+        // zip this target directory to file
+        String targetZipFile = "./report_out/" + "AMR_TREE_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_hhmmss") + ".zip";
         try {
-            // write file
-            FileOutputStream outputStream = new FileOutputStream(path);
-            doc.write(outputStream);
-            outputStream.flush();
-            outputStream.close();
+            CommonUtils.zipDirectory(targetDirectory, targetZipFile);
         } catch (IOException e) {
-            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
-        return path;
+
+        // delete target directory
+        CommonUtils.deleteDirectory(new File(targetDirectory));
+        return targetZipFile;
     }
 
-    private void writeInDocFile(XWPFDocument doc, List<SentenceAndAMRTree> sentenceAndAMRTrees) {
+    private void writeDataToDocDirectory(String targetDirectory, List<AppUser> exportUsers) {
+        for (AppUser exportUser : exportUsers) {
+            List<SentenceDTO> sentenceDTOs = paragraphRepository.getAllSentenceOfUserHaveAmr(exportUser.getId());
+            List<AmrDetailResponseDTO> allNodes = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(exportUser.getId()).getContent();
+            List<SentenceAndAMRTree> sentenceAndAMRTrees = createSentenceAndAmrTrees(sentenceDTOs, allNodes);
+            XWPFDocument doc = new XWPFDocument();
+            writeInDocFile(doc, sentenceAndAMRTrees, exportUser.getUsername());
+
+            String path = targetDirectory;
+            File dir = new File(path);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            path += exportUser.getUsername() + ".docx";
+            try {
+                // write file
+                FileOutputStream outputStream = new FileOutputStream(path);
+                doc.write(outputStream);
+                outputStream.flush();
+                outputStream.close();
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+    }
+
+    private void writeInDocFile(XWPFDocument doc, List<SentenceAndAMRTree> sentenceAndAMRTrees, String exportUsername) {
+        SentenceDTO sentenceDTO;
         for (int i = 0; i < sentenceAndAMRTrees.size(); i++) {
             SentenceAndAMRTree sentenceAndAMRTree = sentenceAndAMRTrees.get(i);
             XWPFParagraph p1 = doc.createParagraph();
             XWPFRun r1 = p1.createRun();
             r1.setFontSize(16);
-            r1.setText("- Câu " + (i+1) + ": ");
+            // first line
+            sentenceDTO = sentenceAndAMRTree.getSentence();
+            r1.setText("::id " + sentenceDTO.getDivId() + "-" + sentenceDTO.getParagraphId() + "-" + sentenceDTO.getSentenceId() + " ");
+            r1.setText("::date " + CommonUtils.getStrDateTime(sentenceAndAMRTree.getLastUpdateTime()) + " ");
+            r1.setText("::annotator " + exportUsername);
+            r1.addCarriageReturn();
+            // second line
+            r1.setText("::snt ");
             r1.setText(sentenceAndAMRTree.getSentence().getContent());
             r1.addCarriageReturn();
 
@@ -328,8 +390,8 @@ public class AmrServiceImpl implements AmrService {
             String[] lines;
             for (int j = 0; j < sentenceAndAMRTree.getAmrTrees().size(); j++) {
                 AmrTreeResponseDTO amrTree = sentenceAndAMRTree.getAmrTrees().get(j);
-                r2.setText(" + Cây AMR " + (j+1) + ":");
-                r2.addCarriageReturn();
+//                r2.setText(" + Cây AMR " + (j+1) + ":");
+//                r2.addCarriageReturn();
                 amrTest = amrTree.getAmrText().toString();
                 lines = amrTest.split("\n");
                 r2.setText(lines[0]);
@@ -380,11 +442,22 @@ public class AmrServiceImpl implements AmrService {
 
         SentenceDTO sentence;
         String sentencePosition;
+        Date lastUpdateTime;
         for (SentenceAndAMRTree item : result) {
             sentence = item.getSentence();
             sentencePosition = String.format("d%sp%ss%s", sentence.getDivId(), sentence.getParagraphId(), sentence.getSentenceId());
             if (mapTree.containsKey(sentencePosition)) {
-                item.setAmrTrees(mapTree.get(sentencePosition));
+                listTree = mapTree.get(sentencePosition);
+                item.setAmrTrees(listTree);
+                lastUpdateTime = null;
+                for (AmrTreeResponseDTO tree : listTree) {
+                    if (tree.getUpdateTime() != null) {
+                        lastUpdateTime = lastUpdateTime != null ? (lastUpdateTime.after(tree.getUpdateTime()) ? lastUpdateTime : tree.getUpdateTime()) : tree.getUpdateTime();
+                    }
+                }
+                if (lastUpdateTime != null) {
+                    item.setLastUpdateTime(lastUpdateTime);
+                }
             }
         }
 

@@ -8,7 +8,7 @@ import java.util.List;
 public interface AmrDetailRepositoryCustom {
     FormResult getAmrDetail(String username, Long treeId);
 
-    FormResult getAmrDetailForExport(Long userId, List<AppUserRole> userRoles);
+    FormResult getAmrDetailForExport(Long exportUserid);
 
     FormResult statisticUsers();
 }

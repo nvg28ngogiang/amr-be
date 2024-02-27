@@ -101,13 +101,11 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
     }
 
     @Override
-    public FormResult getAmrDetailForExport(Long userId, List<AppUserRole> userRoles) {
+    public FormResult getAmrDetailForExport(Long exportUserId) {
         FormResult result = new FormResult();
-        StringBuilder sql = buildAmrDetailForExportSQL(userRoles);
+        StringBuilder sql = buildAmrDetailForExportSQL();
         Query query = entityManager.createNativeQuery(sql.toString());
-        if (!userRoles.contains(AppUserRole.ADMIN)) {
-            query.setParameter("userId", userId);
-        }
+        query.setParameter("userId", exportUserId);
 
         NativeQueryImpl nativeQuery = (NativeQueryImpl) query;
         nativeQuery.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
@@ -139,25 +137,23 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
         return String.format("d%sp%ss%s", parts[0], parts[1], parts[2]);
     }
 
-    StringBuilder buildAmrDetailForExportSQL(List<AppUserRole> userRoles) {
+    StringBuilder buildAmrDetailForExportSQL() {
         StringBuilder sql = new StringBuilder("select w.id as \"wordId\", aw.parent_id as \"parentId\", " +
                 "       w.content as \"wordContent\", aw.tree_id as \"treeId\", " +
                 "       aw.amr_label_id as \"amrLabelId\", al.name as \"amrLabelContent\", " +
                 "       aw.word_label as \"wordLabel\", aw.word_sense_id as \"wordSenseId\", " +
                 "       w.pos_label as \"posLabel\", ws.sense as \"wordSense\"," +
                 "       at.sentence_position as \"sentencePosition\"," +
-                "       w.word_order as \"wordOrder\" " +
+                "       w.word_order as \"wordOrder\", " +
+                "       au.username, at.update_time as \"updateTime\" " +
                 "from amr_word aw " +
                 "left join word w on aw.word_id = w.id " +
                 "left join amr_label al on aw.amr_label_id = al.id " +
                 "left join word_sense ws on aw.word_sense_id = ws.id " +
-                "left join amr_tree at on aw.tree_id = at.id ");
-
-        if (!userRoles.contains(AppUserRole.ADMIN)) {
-            sql.append("where at.user_id =:userId ");
-        }
-
-        sql.append(" order by at.sentence_position, at.id, w.word_order ");
+                "left join amr_tree at on aw.tree_id = at.id " +
+                "left join app_user au on at.user_id = au.id " +
+                "   where at.user_id = :userId " +
+                "   order by at.sentence_position, at.id, w.word_order ");
 
         return sql;
     }

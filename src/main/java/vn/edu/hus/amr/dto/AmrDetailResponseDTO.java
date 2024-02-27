@@ -2,6 +2,8 @@ package vn.edu.hus.amr.dto;
 
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 public class AmrDetailResponseDTO {
     private Long id;
@@ -24,6 +26,8 @@ public class AmrDetailResponseDTO {
     private String correfPosition;
 
     private Boolean isAdditional;
+    private String username;
+    private Date updateTime;
 
     public void changeToAdditionalWord() {
         this.wordId = -this.wordId;

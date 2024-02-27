@@ -1,5 +1,6 @@
 package vn.edu.hus.amr.repository;
 
+import org.springframework.data.jpa.repository.Query;
 import vn.edu.hus.amr.model.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 

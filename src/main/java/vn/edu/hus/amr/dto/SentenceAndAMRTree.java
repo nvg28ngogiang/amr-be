@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -11,6 +12,7 @@ import java.util.List;
 public class SentenceAndAMRTree {
     private SentenceDTO sentence;
     private List<AmrTreeResponseDTO> amrTrees;
+    private Date lastUpdateTime;
 
     public SentenceAndAMRTree(SentenceDTO sentence) {
         this.sentence = sentence;

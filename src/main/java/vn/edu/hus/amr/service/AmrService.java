@@ -1,6 +1,7 @@
 package vn.edu.hus.amr.service;
 
 import vn.edu.hus.amr.dto.AmrDetailRequestDTO;
+import vn.edu.hus.amr.dto.ExportRequestDTO;
 import vn.edu.hus.amr.dto.ResponseDTO;
 
 public interface AmrService {
@@ -10,9 +11,9 @@ public interface AmrService {
 
     ResponseDTO getAmrLabels();
 
-    String export(String username);
+    String exportExcelFile(String username, ExportRequestDTO input);
 
-    String exportDocumentFile(String username);
+    String exportDocumentFile(String username, ExportRequestDTO input);
 
     ResponseDTO statisticUsers();
 }
