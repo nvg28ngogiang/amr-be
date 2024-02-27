@@ -192,7 +192,7 @@ public class CommonUtils {
     }
 
     public static String getStrDateTime(Date date) {
-        String DATE_FORMAT = "yyyy-MM-dd'T'hh:mm:ss";
+        String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
         if (date != null) {
             return new SimpleDateFormat(DATE_FORMAT).format(date);
         } else {

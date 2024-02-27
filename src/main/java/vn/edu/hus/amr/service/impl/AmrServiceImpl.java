@@ -72,6 +72,7 @@ public class AmrServiceImpl implements AmrService {
                     input.getSentenceId()
             );
             amrTree.setSentencePosition(sentencePosition);
+            amrTree.setUpdateTime(new Date());
 
             AppUser appUser = userRepository.findByUsername(username);
             amrTree.setUserId(appUser.getId());
@@ -203,11 +204,11 @@ public class AmrServiceImpl implements AmrService {
             exportUsers.addAll(userRepository.findByIdIn(exportUserIds));
         }
 
-        String targetDirectory = "./report_out/amr_excel_data_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_hhmmss") + "/";
+        String targetDirectory = "./report_out/amr_excel_data_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_HHmmss") + "/";
         writeDataToExcelDirectory(targetDirectory, exportUsers);
 
         // zip this target directory to file
-        String targetZipFile = "./report_out/" + "AMR_TREE_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_hhmmss") + ".zip";
+        String targetZipFile = "./report_out/" + "AMR_TREE_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_HHmmss") + ".zip";
         try {
             CommonUtils.zipDirectory(targetDirectory, targetZipFile);
         } catch (IOException e) {
@@ -322,11 +323,11 @@ public class AmrServiceImpl implements AmrService {
             exportUsers.addAll(userRepository.findByIdIn(exportUserIds));
         }
 
-        String targetDirectory = "./report_out/amr_doc_data_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_hhmmss") + "/";
+        String targetDirectory = "./report_out/amr_doc_data_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_HHmmss") + "/";
         writeDataToDocDirectory(targetDirectory, exportUsers);
 
         // zip this target directory to file
-        String targetZipFile = "./report_out/" + "AMR_TREE_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_hhmmss") + ".zip";
+        String targetZipFile = "./report_out/" + "AMR_TREE_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_HHmmss") + ".zip";
         try {
             CommonUtils.zipDirectory(targetDirectory, targetZipFile);
         } catch (IOException e) {
