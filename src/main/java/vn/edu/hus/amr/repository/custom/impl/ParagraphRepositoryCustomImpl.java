@@ -176,14 +176,8 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
     }
 
     @Override
-    public List<SentenceDTO> getAllSentenceOfUserHaveAmr(String username) {
-        AppUser appUser = userRepository.findByUsername(username);
-        List<AmrTree> amrTrees;
-        if (appUser.getRoles().contains(AppUserRole.ADMIN)) {
-            amrTrees = amrTreeRepository.findAll();
-        } else {
-            amrTrees = amrTreeRepository.getByUserId(appUser.getId());
-        }
+    public List<SentenceDTO> getAllSentenceOfUserHaveAmr(Long userId) {
+        List<AmrTree> amrTrees = amrTreeRepository.getByUserId(userId);
 
         List<SentenceDTO> result = new ArrayList<>();
         if (amrTrees != null && !amrTrees.isEmpty()) {

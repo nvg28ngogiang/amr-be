@@ -3,10 +3,7 @@ package vn.edu.hus.amr.dto;
 import lombok.Data;
 import vn.edu.hus.amr.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Data
 public class AmrTreeResponseDTO {
@@ -15,6 +12,7 @@ public class AmrTreeResponseDTO {
     private AmrDetailResponseDTO rootNode;
     private String sentencePosition;
     private StringBuilder amrText;
+    private Date updateTime;
 
     public AmrTreeResponseDTO(List<AmrDetailResponseDTO> nodes) {
         adjNodes = new HashMap<>();
@@ -32,6 +30,10 @@ public class AmrTreeResponseDTO {
             }
             if (node.getParentId() == null) {
                 rootNode = node;
+            }
+
+            if (node.getUpdateTime() != null) {
+                updateTime = node.getUpdateTime();
             }
         }
 

@@ -5,16 +5,21 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import vn.edu.hus.amr.dto.AmrDetailRequestDTO;
+import vn.edu.hus.amr.dto.ExportRequestDTO;
 import vn.edu.hus.amr.dto.ResponseDTO;
 import vn.edu.hus.amr.service.AmrService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import vn.edu.hus.amr.util.CommonUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,30 +44,29 @@ public class AmrController {
         return amrService.getAmrLabels();
     }
 
-    @GetMapping("/amr/export/excel")
-    public ResponseEntity<byte[]> export(@AuthenticationPrincipal UserDetails userDetails) {
-        String path = amrService.export(userDetails.getUsername());
+    @PostMapping("/amr/export/excel")
+    public ResponseEntity<byte[]> exportExcel(@AuthenticationPrincipal UserDetails userDetails, @RequestBody ExportRequestDTO input) {
+        String targetFile = amrService.exportExcelFile(userDetails.getUsername(), input);
 
         FileInputStream inputStream = null;
         try {
-            if (path != null) {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-                File file = new File(path);
+            if (targetFile != null) {
+
+                // Step 1: Read the content of this file
+                File file = new File(targetFile);
                 byte[] contentBytes = new byte[(int) file.length()];
                 inputStream = new FileInputStream(file);
                 inputStream.read(contentBytes);
 
+                // Step 2: delete file
                 if (file.delete()) {
                     System.out.println("File deleted successfully.");
                 } else {
                     System.out.println("Failed to delete the file.");
                 }
-                headers.set("File", file.getName());
-                headers.set("Content-Disposition", "attachment; filename=" + file.getName());
-                headers.set("Access-Control-Expose-Headers", "File");
 
-                return ResponseEntity.ok().headers(headers).body(contentBytes);
+                return ResponseEntity.ok().headers(CommonUtils.buildFileResponseHeader(file.getName()))
+                        .body(contentBytes);
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -78,15 +82,13 @@ public class AmrController {
         return null;
     }
 
-    @GetMapping("/amr/export/document")
-    public ResponseEntity<byte[]> exportDocument(@AuthenticationPrincipal UserDetails userDetails) {
-        String path = amrService.exportDocumentFile(userDetails.getUsername());
+    @PostMapping("/amr/export/document")
+    public ResponseEntity<byte[]> exportDocument(@AuthenticationPrincipal UserDetails userDetails, @RequestBody ExportRequestDTO input) {
+        String path = amrService.exportDocumentFile(userDetails.getUsername(), input);
 
         FileInputStream inputStream = null;
         try {
             if (path != null) {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
                 File file = new File(path);
                 byte[] contentBytes = new byte[(int) file.length()];
                 inputStream = new FileInputStream(file);
@@ -97,11 +99,9 @@ public class AmrController {
                 } else {
                     System.out.println("Failed to delete the file.");
                 }
-                headers.set("File", file.getName());
-                headers.set("Content-Disposition", "attachment; filename=" + file.getName());
-                headers.set("Access-Control-Expose-Headers", "File");
 
-                return ResponseEntity.ok().headers(headers).body(contentBytes);
+                return ResponseEntity.ok().headers(CommonUtils.buildFileResponseHeader(file.getName()))
+                        .body(contentBytes);
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);

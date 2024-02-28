@@ -65,3 +65,7 @@ create table amr_label
     name varchar(255),
     group_code varchar(255)
 );
+
+alter table amr_tree add update_time timestamp;
+
+alter table amr_word add english_sense varchar(1000);
