@@ -94,7 +94,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
                 ", a.paragraph_id as paragraphId " +
                 ", a.content " +
                 " from " +
-                "(select div_id, paragraph_id, string_agg(content, ' ') as content  " +
+                "(select div_id, paragraph_id, string_agg(replace(content, '_', ' '), ' ') as content  " +
                 " FROM (SELECT div_id, " +
                 "             paragraph_id, " +
                 "             content, " +
@@ -163,7 +163,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
                 ", a.sentence_id as sentenceId " +
                 ", a.content  " +
                 " from  " +
-                "(select div_id, paragraph_id, sentence_id, string_agg(content, ' ' order by word_order) as content, " +
+                "(select div_id, paragraph_id, sentence_id, string_agg(replace(content, '_', ' '), ' ' order by word_order) as content, " +
                 "count(content) from word  " +
                 "where is_additional is not true and div_id = :divId and paragraph_id = :paragraphId " +
                 "group by div_id, paragraph_id, sentence_id ) a " +

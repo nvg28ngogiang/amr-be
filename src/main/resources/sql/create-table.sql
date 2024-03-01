@@ -33,7 +33,8 @@ create table amr_tree
     id serial primary key,
     user_id bigint,
     sentence_position varchar(255),
-    name varchar(255)
+    name varchar(255),
+    update_time timestamp
 );
 
 create table amr_word
@@ -48,7 +49,8 @@ create table amr_word
     word_sense_id bigint,
     corref_id bigint,
     corref_position varchar(255),
-    is_additional boolean
+    is_additional boolean,
+    english_sense varchar(1000)
 );
 
 create table word_sense

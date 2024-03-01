@@ -71,7 +71,7 @@ public class SentenceRepositoryCustomImpl implements SentenceRepositoryCustom {
                 ", a.paragraph_id as \"paragraphId\" " +
                 ", a.sentence_id as \"sentenceId\" " +
                 ", a.word_order as \"wordOrder\" " +
-                ", a.content " +
+                ", replace(a.content, '_', ' ') as content " +
                 ", a.pos_label as \"posLabel\" " +
                 "from word a  " +
                 "join user_paragraph b on a.div_id  = b.div_id and a.paragraph_id = b.paragraph_id " +
