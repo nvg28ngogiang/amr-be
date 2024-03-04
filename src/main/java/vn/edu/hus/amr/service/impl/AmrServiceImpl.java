@@ -112,7 +112,7 @@ public class AmrServiceImpl implements AmrService {
             // save list amr word
             amrWordRepository.saveAll(amrWords);
 
-            return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Save success", null);
+            return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Save success", amrTree);
         } catch (Exception e) {
             log.error(e.getMessage());
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
