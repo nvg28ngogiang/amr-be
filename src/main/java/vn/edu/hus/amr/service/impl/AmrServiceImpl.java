@@ -2,23 +2,23 @@ package vn.edu.hus.amr.service.impl;
 
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.springframework.web.multipart.MultipartFile;
 import vn.edu.hus.amr.dto.*;
 import vn.edu.hus.amr.model.*;
 import vn.edu.hus.amr.repository.*;
 import vn.edu.hus.amr.service.AmrService;
-import vn.edu.hus.amr.util.CommonUtils;
-import vn.edu.hus.amr.util.Constants;
+import vn.edu.hus.amr.util.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import vn.edu.hus.amr.util.ExcelStyleUtil;
-import vn.edu.hus.amr.util.StringUtils;
 
 import javax.transaction.Transactional;
 import java.io.File;
@@ -47,7 +47,7 @@ public class AmrServiceImpl implements AmrService {
             FormResult formResult = amrWordRepository.getAmrDetail(username, treeId);
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }
@@ -114,7 +114,7 @@ public class AmrServiceImpl implements AmrService {
 
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Save success", null);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }
@@ -186,7 +186,7 @@ public class AmrServiceImpl implements AmrService {
 
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }
@@ -466,6 +466,215 @@ public class AmrServiceImpl implements AmrService {
             }
         }
 
+        return result;
+    }
+
+    @Override
+    public ResponseDTO importInsert(MultipartFile excelDataFile, Long importUserId) {
+        Workbook workbook;
+        try {
+            workbook = WriteResultWorkbookUtils.getWorkbookFromFile(excelDataFile);
+            workbook.setMissingCellPolicy(Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+
+            Set<String> errorSentences = new HashSet<>();
+            List<AmrDetailRequestDTO> amrDetailRequestDTOS = getDataFromRowImport(workbook.getSheetAt(0), workbook.getSheetAt(0).getLastRowNum(), errorSentences);
+            AppUser appUser = userRepository.getById(importUserId);
+
+            int cntSucces = 0;
+            for (AmrDetailRequestDTO dto : amrDetailRequestDTOS) {
+                ResponseDTO responseDTO = saveOrUpdateAmrTree(appUser.getUsername(), dto);
+                if (HttpStatus.INTERNAL_SERVER_ERROR.value() == responseDTO.getStatus()) {
+                    errorSentences.add(dto.getSentencePosition());
+                }
+                if (HttpStatus.OK.value() == responseDTO.getStatus()) {
+                    cntSucces++;
+                }
+            }
+
+            return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, cntSucces + " Success", errorSentences);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
+        }
+    }
+
+    private List<AmrDetailRequestDTO> getDataFromRowImport(Sheet dataSheet, Integer totalRows, Set<String> errorSentences) {
+        // get list ImportAmrRequestDTO from data row
+        List<ImportAmrRequestDTO> importData = new ArrayList<>();
+        Set<String> sentencePositions = new HashSet<>();
+        final int START_ROW = 2;
+        for (int i = START_ROW; i < totalRows; i++) {
+            Row row = dataSheet.getRow(i);
+            if (row != null) {
+                ImportAmrRequestDTO data = getDataFromRowImport(row);
+                data.setRowNum(i);
+                importData.add(data);
+                sentencePositions.add(data.getSentencePosition());
+            }
+        }
+
+        // get list amr label
+        List<AmrLabel> amrLabels = amrLabelRepository.findAll();
+
+        // get list word from list sentence import
+        List<Word> wordDBs = wordRepository.findBySentencePositions(sentencePositions);
+        Map<String, List<Word>> mapWordDB = new HashMap<>();
+        List<Word> mapWordList;
+        for (Word word : wordDBs) {
+            if (mapWordDB.containsKey(word.getSentencePosition())) {
+                mapWordList = mapWordDB.get(word.getSentencePosition());
+                mapWordList.add(word);
+            } else {
+                mapWordList = new ArrayList<>();
+                mapWordList.add(word);
+                mapWordDB.put(word.getSentencePosition(), mapWordList);
+            }
+        }
+
+        for (ImportAmrRequestDTO importWord : importData) {
+            if (mapWordDB.containsKey(importWord.getSentencePosition())) {
+                mapWordList = mapWordDB.get(importWord.getSentencePosition());
+                boolean isWord = false;
+                for (Word word : mapWordList) {
+                    if (word.getWordOrder().equals(importWord.getWordOrder())) {
+                        isWord = true;
+                        importWord.setWordId(word.getId());
+                    }
+                    if (importWord.getParentWordOrder() != null && importWord.getParentWordOrder().equals(word.getId())) {
+                        importWord.setParentId(word.getId());
+                    }
+                }
+                if (!isWord) {
+                    errorSentences.add(importWord.getSentencePosition());
+                }
+
+                boolean isAmrLabel = false;
+                for (AmrLabel amrLabel : amrLabels) {
+                    if (amrLabel.getName().equalsIgnoreCase(importWord.getAmrLabelName())) {
+                        isAmrLabel = true;
+                        importWord.setAmrLabelId(amrLabel.getId());
+                    }
+                }
+                if (!isAmrLabel) {
+                    errorSentences.add(importWord.getSentencePosition());
+                }
+            }
+        }
+
+        Map<String, List<ImportAmrRequestDTO>> mapImport = new HashMap<>();
+        List<ImportAmrRequestDTO> listImport;
+        for (ImportAmrRequestDTO importWord : importData) {
+            if (!errorSentences.contains(importWord.getSentencePosition())) {
+                if (mapImport.containsKey(importWord.getSentencePosition())) {
+                    listImport = mapImport.get(importWord.getSentencePosition());
+                    listImport.add(importWord);
+                } else {
+                    listImport = new ArrayList<>();
+                    listImport.add(importWord);
+                    mapImport.put(importWord.getSentencePosition(), listImport);
+                }
+            }
+        }
+
+        List<AmrDetailRequestDTO> result = new ArrayList<>();
+        for (Map.Entry<String, List<ImportAmrRequestDTO>> entry : mapImport.entrySet()) {
+            String sentencePosition = entry.getKey();
+            AmrDetailRequestDTO amrDetailRequestDTO = new AmrDetailRequestDTO();
+            amrDetailRequestDTO.convertSentencePosition(sentencePosition);
+            amrDetailRequestDTO.setNodes(convertToAmrNode(entry.getValue()));
+            result.add(amrDetailRequestDTO);
+        }
+
+        return result;
+    }
+
+    private List<AmrNode> convertToAmrNode(List<ImportAmrRequestDTO> importList) {
+        return importList.stream().map(item -> {
+            AmrNode amrNode = new AmrNode();
+            amrNode.setWordId(item.getWordId());
+            amrNode.setParentId(item.getParentId());
+            amrNode.setAmrLabelId(item.getAmrLabelId());
+            amrNode.setWordLabel(item.getWordLabel());
+            return amrNode;
+        }).collect(Collectors.toList());
+    }
+
+    private ImportAmrRequestDTO getDataFromRowImport(Row row) {
+        ImportAmrRequestDTO data = new ImportAmrRequestDTO();
+        if (row != null) {
+            int column = 1;
+            String sentencePosition = WriteResultWorkbookUtils.formatCell(row.getCell(column++));
+            String wordOrderStr = WriteResultWorkbookUtils.formatCell(row.getCell(column++));
+            String parentWordOrderStr = WriteResultWorkbookUtils.formatCell(row.getCell(column++));
+            String amrLabelName = WriteResultWorkbookUtils.formatCell(row.getCell(column++));
+            String wordLabel = WriteResultWorkbookUtils.formatCell(row.getCell(column));
+
+            if (StringUtils.isNotNUll(sentencePosition)) {
+                data.setSentencePosition(sentencePosition);
+                if (!CommonUtils.isNumber(wordOrderStr)) {
+                    return null;
+                } else {
+                    data.setWordOrder(Long.parseLong(wordOrderStr));
+                }
+
+                if (parentWordOrderStr != null) {
+                    if (!CommonUtils.isNumber(parentWordOrderStr)) {
+                        return null;
+                    } else {
+                        data.setParentWordOrder(Long.parseLong(parentWordOrderStr));
+                    }
+                }
+                data.setAmrLabelName(amrLabelName);
+                data.setWordLabel(wordLabel);
+            }
+        }
+
+        return data;
+    }
+
+    @Override
+    public String importTemplate() {
+        final String PATH = "./import_file/amr_template.xlsx";
+
+        File file = new File(PATH);
+
+        if (!file.exists()) {
+            // create file
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet dataSheet = workbook.createSheet("data");
+
+            CellStyle headerCellStyle = ExcelStyleUtil.getHeaderCellStyle(workbook);
+
+            int rowNum = 0;
+            List<ExcelHeaderDTO> headerList = generateHeaderTemplate();
+            Row headerRow = dataSheet.createRow(rowNum);
+            headerCellStyle.setWrapText(true);
+            CommonUtils.setHeaderToRowList(workbook, headerList, headerRow, dataSheet, headerCellStyle);
+
+            try {
+                // write file
+                boolean isCreated = file.createNewFile();
+                if (isCreated) {
+                    FileOutputStream outputStream = new FileOutputStream(PATH);
+                    workbook.write(outputStream);
+                    outputStream.flush();
+                    outputStream.close();
+                }
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+
+        return PATH;
+    }
+
+    private List<ExcelHeaderDTO> generateHeaderTemplate() {
+        List<ExcelHeaderDTO> result = new ArrayList<>();
+        result.add(new ExcelHeaderDTO("Sentence position", ExcelStyleUtil.MEDIUM_SIZE));
+        result.add(new ExcelHeaderDTO("Word order", ExcelStyleUtil.MEDIUM_SIZE));
+        result.add(new ExcelHeaderDTO("Parent word order", ExcelStyleUtil.MEDIUM_SIZE));
+        result.add(new ExcelHeaderDTO("Amr label", ExcelStyleUtil.MEDIUM_SIZE));
+        result.add(new ExcelHeaderDTO("Word label", ExcelStyleUtil.MEDIUM_SIZE));
         return result;
     }
 }

@@ -1,5 +1,6 @@
 package vn.edu.hus.amr.service;
 
+import org.springframework.web.multipart.MultipartFile;
 import vn.edu.hus.amr.dto.AmrDetailRequestDTO;
 import vn.edu.hus.amr.dto.ExportRequestDTO;
 import vn.edu.hus.amr.dto.ResponseDTO;
@@ -16,4 +17,8 @@ public interface AmrService {
     String exportDocumentFile(String username, ExportRequestDTO input);
 
     ResponseDTO statisticUsers();
+
+    ResponseDTO importInsert(MultipartFile excelDataFile, Long importUserId);
+
+    String importTemplate();
 }

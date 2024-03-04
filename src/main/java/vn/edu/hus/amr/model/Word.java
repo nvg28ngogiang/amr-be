@@ -33,4 +33,7 @@ public class Word {
     @Column(name = "is_additional")
     private boolean isAdditional;
 
+    public String getSentencePosition() {
+        return "d" + this.divId + "p" + this.paragraphId + "s" + this.sentenceId;
+    }
 }

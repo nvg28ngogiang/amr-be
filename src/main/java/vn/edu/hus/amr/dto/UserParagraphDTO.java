@@ -10,4 +10,5 @@ public class UserParagraphDTO {
     private Long paragraphId;
     private List<Long> userIds;
     private List<UserDataDTO> users;
+    private List<ParagraphPosition> paragraphPositions;
 }

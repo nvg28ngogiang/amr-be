@@ -31,7 +31,7 @@ public class SentenceServiceImpl implements SentenceService {
             FormResult formResult = sentenceRepository.getSentenceDetail(username, divId, paragraphId, sentenceId);
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }
@@ -42,13 +42,13 @@ public class SentenceServiceImpl implements SentenceService {
             FormResult formResult = new FormResult();
             AppUser appUser = userRepository.findByUsername(username);
             String sentencePosition = AmrTree.createSentencePosition(divId, paragraphId, sentenceId);
-            List<AmrTree> listResponse = amrTreeRepository.getByUserIdAndSentencePosition(appUser.getId(), sentencePosition);
+            List<AmrTree> listResponse = amrTreeRepository.getByUserIdAndSentencePositionOrderById(appUser.getId(), sentencePosition);
 
             formResult.setContent(listResponse);
             formResult.setTotalElements(Long.valueOf(listResponse.size()));
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }
