@@ -1,7 +1,9 @@
 package vn.edu.hus.amr.service.impl;
 
+import org.modelmapper.ModelMapper;
 import vn.edu.hus.amr.dto.FormResult;
 import vn.edu.hus.amr.dto.ResponseDTO;
+import vn.edu.hus.amr.dto.WordSenseDTO;
 import vn.edu.hus.amr.model.WordSense;
 import vn.edu.hus.amr.repository.WordSenseRepository;
 import vn.edu.hus.amr.service.WordSenseService;
@@ -17,6 +19,9 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 @Log4j2
 public class WordSenseServiceImpl implements WordSenseService {
+
+    private final ModelMapper modelMapper;
+
     private final WordSenseRepository wordSenseRepository;
 
     @Override
@@ -33,4 +38,20 @@ public class WordSenseServiceImpl implements WordSenseService {
 
         }
     }
+
+    @Override
+    public WordSenseDTO create(WordSenseDTO dto) {
+        WordSense entity = new WordSense();
+        entity.setWordContent(dto.getWordContent());
+        entity.setSense(dto.getSense());
+        entity.setExample(dto.getExample());
+        entity = wordSenseRepository.save(entity);
+        return modelMapper.map(entity, WordSenseDTO.class);
+    }
+
+    @Override
+    public void deleteWordSensesByIdIn(List<Long> senseIds) {
+        wordSenseRepository.deleteAllById(senseIds);
+    }
+
 }
