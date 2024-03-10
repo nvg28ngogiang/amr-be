@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -198,5 +199,11 @@ public class CommonUtils {
         } else {
             return "";
         }
+    }
+
+    public static boolean isNumber(String str) {
+        Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+
+        return pattern.matcher(str).matches();
     }
 }

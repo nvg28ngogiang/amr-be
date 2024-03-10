@@ -33,7 +33,7 @@ public class WordSenseServiceImpl implements WordSenseService {
             formResult.setTotalElements(Long.valueOf(listData.size()));
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
 
         }

@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 import vn.edu.hus.amr.dto.AmrDetailRequestDTO;
 import vn.edu.hus.amr.dto.ExportRequestDTO;
 import vn.edu.hus.amr.dto.ResponseDTO;
@@ -120,5 +121,37 @@ public class AmrController {
     @GetMapping("/amr/statistic")
     public ResponseDTO statisticUsers() {
         return amrService.statisticUsers();
+    }
+
+    @PostMapping("/import")
+    public ResponseDTO importInsert(@RequestParam MultipartFile file, @RequestBody Long importUserId) {
+        return amrService.importInsert(file, importUserId);
+    }
+
+    @GetMapping("/import-template")
+    public ResponseEntity<byte[]> importTemplate() {
+        String path = amrService.importTemplate();
+
+        FileInputStream inputStream = null;
+        try {
+            File file = new File(path);
+            byte[] contentBytes = new byte[(int) file.length()];
+//            inputStream = new FileInputStream(file);
+//            inputStream.read(contentBytes);
+
+            return ResponseEntity.ok().headers(CommonUtils.buildFileResponseHeader(file.getName()))
+                    .body(contentBytes);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+        return null;
     }
 }
