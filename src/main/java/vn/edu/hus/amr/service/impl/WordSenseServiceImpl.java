@@ -40,8 +40,9 @@ public class WordSenseServiceImpl implements WordSenseService {
     }
 
     @Override
-    public WordSenseDTO create(WordSenseDTO dto) {
+    public WordSenseDTO save(WordSenseDTO dto) {
         WordSense entity = new WordSense();
+        entity.setId(dto.getId());
         entity.setWordContent(dto.getWordContent());
         entity.setSense(dto.getSense());
         entity.setExample(dto.getExample());

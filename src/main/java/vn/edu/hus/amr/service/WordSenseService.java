@@ -8,7 +8,7 @@ import java.util.List;
 public interface WordSenseService {
     ResponseDTO getWordSenses(String wordContent);
 
-    WordSenseDTO create(WordSenseDTO wordSense);
+    WordSenseDTO save(WordSenseDTO wordSense);
 
     void deleteWordSensesByIdIn(List<Long> senseIds);
 }

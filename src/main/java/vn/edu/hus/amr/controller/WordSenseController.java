@@ -23,8 +23,8 @@ public class WordSenseController {
     }
 
     @PostMapping
-    public ResponseDTO createWordSense(@RequestBody WordSenseDTO wordSense) {
-        WordSenseDTO savedWordSense = wordSenseService.create(wordSense);
+    public ResponseDTO saveWordSense(@RequestBody WordSenseDTO wordSense) {
+        WordSenseDTO savedWordSense = wordSenseService.save(wordSense);
         return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", savedWordSense);
     }
 
