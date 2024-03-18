@@ -19,6 +19,10 @@ public class AmrNode {
     private String englishSense;
 
     public boolean isAdditionalWord() {
-        return this.wordId < 0;
+        return this.wordId < 0 && (this.wordContent != null && !"".equals(this.wordContent.trim()));
+    }
+
+    public boolean isDuplicateWord() {
+        return this.wordId < 0 && (this.wordContent == null || "".equals(this.wordContent.trim()));
     }
 }

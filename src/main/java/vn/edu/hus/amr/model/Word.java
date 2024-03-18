@@ -31,7 +31,7 @@ public class Word {
     private String posLabel;
 
     @Column(name = "is_additional")
-    private boolean isAdditional;
+    private Boolean isAdditional;
 
     public String getSentencePosition() {
         return "d" + this.divId + "p" + this.paragraphId + "s" + this.sentenceId;

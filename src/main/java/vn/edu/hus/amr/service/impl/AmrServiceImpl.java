@@ -82,7 +82,7 @@ public class AmrServiceImpl implements AmrService {
 
             // delete all additional word belong to amr tree
             if (input.getAmrTreeId() != null) {
-                List<Word> additionalWords = wordRepository.findByTreeId(input.getAmrTreeId());
+                List<Word> additionalWords = wordRepository.findAdditionalWordByTreeId(input.getAmrTreeId());
                 if (additionalWords != null && !additionalWords.isEmpty()) {
                     wordRepository.deleteAll(additionalWords);
                 }
@@ -100,6 +100,23 @@ public class AmrServiceImpl implements AmrService {
                         childNode.setParentId(newWord.getId());
                     }
                     node.setWordId(newWord.getId());
+                }
+            }
+
+            // if exist duplicate word, save them as a additional word
+            List<AmrNode> duplicateAmrNodes = getDuplicateNodes(input.getNodes());
+            if (duplicateAmrNodes != null && !duplicateAmrNodes.isEmpty()) {
+                Word duplicateWord;
+                for (AmrNode node : duplicateAmrNodes) {
+                    duplicateWord = createDuplicateWord(input.getDivId(), input.getParagraphId(), input.getSentenceId(), node);
+                    if (duplicateWord != null) {
+                        wordRepository.save(duplicateWord);
+                        List<AmrNode> childNodes = getChildNodes(input.getNodes(), node.getWordId());
+                        for (AmrNode childNode : childNodes) {
+                            childNode.setParentId(duplicateWord.getId());
+                        }
+                        node.setWordId(duplicateWord.getId());
+                    }
                 }
             }
 
@@ -126,8 +143,30 @@ public class AmrServiceImpl implements AmrService {
         word.setSentenceId(sentenceId);
         word.setPosLabel(node.getPosLabel());
         word.setContent(node.getWordContent());
-        word.setAdditional(true);
+        word.setIsAdditional(true);
         return word;
+    }
+
+    private Word createDuplicateWord(Long divId, Long paragraphId, Long sentenceId, AmrNode node) {
+        Word duplicateWord = new Word();
+        duplicateWord.setDivId(divId);
+        duplicateWord.setParagraphId(paragraphId);
+        duplicateWord.setSentenceId(sentenceId);
+
+        if (node.getCorrefId() != null) {
+            Optional<Word> referenceWordOpt = wordRepository.findById(node.getCorrefId());
+            if (referenceWordOpt.isPresent()) {
+                Word referenceWord = referenceWordOpt.get();
+                duplicateWord.setContent(referenceWord.getContent());
+                duplicateWord.setPosLabel(referenceWord.getPosLabel());
+                duplicateWord.setIsAdditional(true);
+                return duplicateWord;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 
     private List<AmrNode> getChildNodes(List<AmrNode> nodes, Long parentId) {
@@ -136,6 +175,10 @@ public class AmrServiceImpl implements AmrService {
 
     private List<AmrNode> getAdditionalNodes(List<AmrNode> amrNodes) {
         return amrNodes.stream().filter(AmrNode::isAdditionalWord).collect(Collectors.toList());
+    }
+
+    private List<AmrNode> getDuplicateNodes(List<AmrNode> amrNodes) {
+        return amrNodes.stream().filter(AmrNode::isDuplicateWord).collect(Collectors.toList());
     }
 
     private void deleteListExistAmrWord(Long treeId) {
@@ -225,6 +268,14 @@ public class AmrServiceImpl implements AmrService {
     }
 
     private void writeDataToExcelDirectory(String targetDirectory, List<AppUser> exportUsers) {
+//        List<WriterThread> threads = new ArrayList<>();
+//        for (AppUser exportUser : exportUsers) {
+//            threads.add(new WriterThread(exportUser, targetDirectory));
+//        }
+//        for (WriterThread thread : threads) {
+//            thread.start();
+//        }
+
         for (AppUser exportUser : exportUsers) {
             List<AmrDetailResponseDTO> listResponse = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(exportUser.getId()).getContent();
             if (listResponse == null) {
@@ -234,6 +285,25 @@ public class AmrServiceImpl implements AmrService {
             writeDataToExcelFile(listResponse, targetDirectory, exportUser.getUsername());
         }
     }
+
+//    class WriterThread extends Thread {
+//        AppUser exportUser;
+//        String targetDirectory;
+//        public WriterThread(AppUser exportUser, String targetDirectory) {
+//            this.exportUser = exportUser;
+//            this.targetDirectory = targetDirectory;
+//        }
+//
+//        @Override
+//        public void run() {
+//            List<AmrDetailResponseDTO> listResponse = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(exportUser.getId()).getContent();
+//            if (listResponse == null) {
+//                listResponse = new ArrayList<>();
+//            }
+//
+//            writeDataToExcelFile(listResponse, targetDirectory, exportUser.getUsername());
+//        }
+//    }
 
     private void writeDataToExcelFile(List<AmrDetailResponseDTO> listData, String dirPath, String username) {
         XSSFWorkbook workbook = new XSSFWorkbook();
