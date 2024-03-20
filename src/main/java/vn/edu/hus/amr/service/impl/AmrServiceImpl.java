@@ -540,7 +540,7 @@ public class AmrServiceImpl implements AmrService {
     }
 
     @Override
-    public ResponseDTO importInsert(MultipartFile excelDataFile, Long importUserId) {
+    public ResponseDTO importInsert(MultipartFile excelDataFile, Long importUserId, String username) {
         Workbook workbook;
         try {
             workbook = WriteResultWorkbookUtils.getWorkbookFromFile(excelDataFile);
@@ -548,7 +548,13 @@ public class AmrServiceImpl implements AmrService {
 
             Set<String> errorSentences = new HashSet<>();
             List<AmrDetailRequestDTO> amrDetailRequestDTOS = getDataFromRowImport(workbook.getSheetAt(0), workbook.getSheetAt(0).getLastRowNum(), errorSentences);
-            AppUser appUser = userRepository.getById(importUserId);
+
+            AppUser appUser;
+            if (importUserId != null) {
+                appUser = userRepository.getById(importUserId);
+            } else {
+                appUser = userRepository.findByUsername(username);
+            }
 
             int cntSucces = 0;
             for (AmrDetailRequestDTO dto : amrDetailRequestDTOS) {
@@ -572,8 +578,8 @@ public class AmrServiceImpl implements AmrService {
         // get list ImportAmrRequestDTO from data row
         List<ImportAmrRequestDTO> importData = new ArrayList<>();
         Set<String> sentencePositions = new HashSet<>();
-        final int START_ROW = 2;
-        for (int i = START_ROW; i < totalRows; i++) {
+        final int START_ROW = 1;
+        for (int i = START_ROW; i <= totalRows; i++) {
             Row row = dataSheet.getRow(i);
             if (row != null) {
                 ImportAmrRequestDTO data = getDataFromRowImport(row);
@@ -587,7 +593,8 @@ public class AmrServiceImpl implements AmrService {
         List<AmrLabel> amrLabels = amrLabelRepository.findAll();
 
         // get list word from list sentence import
-        List<Word> wordDBs = wordRepository.findBySentencePositions(sentencePositions);
+        sentencePositions.remove(null);
+        List<Word> wordDBs = wordRepository.findBySentencePositions(new ArrayList<>(sentencePositions));
         Map<String, List<Word>> mapWordDB = new HashMap<>();
         List<Word> mapWordList;
         for (Word word : wordDBs) {
@@ -606,11 +613,11 @@ public class AmrServiceImpl implements AmrService {
                 mapWordList = mapWordDB.get(importWord.getSentencePosition());
                 boolean isWord = false;
                 for (Word word : mapWordList) {
-                    if (word.getWordOrder().equals(importWord.getWordOrder())) {
+                    if (Objects.equals(word.getWordOrder(), importWord.getWordOrder() )) {
                         isWord = true;
                         importWord.setWordId(word.getId());
                     }
-                    if (importWord.getParentWordOrder() != null && importWord.getParentWordOrder().equals(word.getId())) {
+                    if (importWord.getParentWordOrder() != null && importWord.getParentWordOrder().equals(word.getWordOrder())) {
                         importWord.setParentId(word.getId());
                     }
                 }
@@ -618,15 +625,17 @@ public class AmrServiceImpl implements AmrService {
                     errorSentences.add(importWord.getSentencePosition());
                 }
 
-                boolean isAmrLabel = false;
-                for (AmrLabel amrLabel : amrLabels) {
-                    if (amrLabel.getName().equalsIgnoreCase(importWord.getAmrLabelName())) {
-                        isAmrLabel = true;
-                        importWord.setAmrLabelId(amrLabel.getId());
+                if (importWord.getAmrLabelName() != null && !"".equals(importWord.getAmrLabelName().trim())) {
+                    boolean isAmrLabel = false;
+                    for (AmrLabel amrLabel : amrLabels) {
+                        if (amrLabel.getName().equalsIgnoreCase(importWord.getAmrLabelName())) {
+                            isAmrLabel = true;
+                            importWord.setAmrLabelId(amrLabel.getId());
+                        }
                     }
-                }
-                if (!isAmrLabel) {
-                    errorSentences.add(importWord.getSentencePosition());
+                    if (!isAmrLabel) {
+                        errorSentences.add(importWord.getSentencePosition());
+                    }
                 }
             }
         }
@@ -672,7 +681,7 @@ public class AmrServiceImpl implements AmrService {
     private ImportAmrRequestDTO getDataFromRowImport(Row row) {
         ImportAmrRequestDTO data = new ImportAmrRequestDTO();
         if (row != null) {
-            int column = 1;
+            int column = 0;
             String sentencePosition = WriteResultWorkbookUtils.formatCell(row.getCell(column++));
             String wordOrderStr = WriteResultWorkbookUtils.formatCell(row.getCell(column++));
             String parentWordOrderStr = WriteResultWorkbookUtils.formatCell(row.getCell(column++));
@@ -687,7 +696,7 @@ public class AmrServiceImpl implements AmrService {
                     data.setWordOrder(Long.parseLong(wordOrderStr));
                 }
 
-                if (parentWordOrderStr != null) {
+                if (parentWordOrderStr != null && !"".equals(parentWordOrderStr.trim())) {
                     if (!CommonUtils.isNumber(parentWordOrderStr)) {
                         return null;
                     } else {

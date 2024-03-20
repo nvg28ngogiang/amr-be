@@ -123,9 +123,9 @@ public class AmrController {
         return amrService.statisticUsers();
     }
 
-    @PostMapping("/import")
-    public ResponseDTO importInsert(@RequestParam MultipartFile file, @RequestBody Long importUserId) {
-        return amrService.importInsert(file, importUserId);
+    @PostMapping(value = "/imports", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseDTO importInsert(@RequestPart MultipartFile file, @RequestParam Long importUserId, @AuthenticationPrincipal UserDetails userDetails) {
+        return amrService.importInsert(file, importUserId, userDetails.getUsername());
     }
 
     @GetMapping("/import-template")
