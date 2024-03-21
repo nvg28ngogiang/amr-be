@@ -583,9 +583,11 @@ public class AmrServiceImpl implements AmrService {
             Row row = dataSheet.getRow(i);
             if (row != null) {
                 ImportAmrRequestDTO data = getDataFromRowImport(row);
-                data.setRowNum(i);
-                importData.add(data);
-                sentencePositions.add(data.getSentencePosition());
+                if (data != null) {
+                    data.setRowNum(i);
+                    importData.add(data);
+                    sentencePositions.add(data.getSentencePosition());
+                }
             }
         }
 
@@ -637,6 +639,8 @@ public class AmrServiceImpl implements AmrService {
                         errorSentences.add(importWord.getSentencePosition());
                     }
                 }
+            } else {
+                errorSentences.add(importWord.getSentencePosition());
             }
         }
 
