@@ -8,7 +8,7 @@ import java.util.List;
 public interface ParagraphRepositoryCustom {
     FormResult getParagraphPaging(String username, Integer first, Integer rows, Integer numOfWords);
 
-    FormResult getAllSentenceOfParagraph(String username, Long divId, Long paragraphId);
+//    FormResult getAllSentenceOfParagraph(String username, Long divId, Long paragraphId);
 
     FormResult getAssingUsers(Long divId, Long paragraphId);
 
