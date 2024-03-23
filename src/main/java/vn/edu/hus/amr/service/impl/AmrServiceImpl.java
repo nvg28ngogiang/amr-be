@@ -433,6 +433,13 @@ public class AmrServiceImpl implements AmrService {
 
     private void writeDataToDocDirectory(String targetDirectory, List<AppUser> exportUsers) {
         for (AppUser exportUser : exportUsers) {
+//            List<String> sentencePositions = new ArrayList<>();
+//            List<AmrTree> amrTrees = amrTreeRepository.getByUserId(exportUser.getId());
+//            if (amrTrees != null && !amrTrees.isEmpty()) {
+//                sentencePositions = amrTrees.stream().map(AmrTree::getSentencePosition).collect(Collectors.toList());
+//            }
+//            List<vn.edu.hus.amr.dto.projection.SentenceDTO> sentenceDTOs = paragraphRepository.getAllSentenceOfUserHaveAmrTree(sentencePositions);
+
             List<SentenceDTO> sentenceDTOs = paragraphRepository.getAllSentenceOfUserHaveAmr(exportUser.getId());
             List<AmrDetailResponseDTO> allNodes = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(exportUser.getId()).getContent();
             List<SentenceAndAMRTree> sentenceAndAMRTrees = createSentenceAndAmrTrees(sentenceDTOs, allNodes);

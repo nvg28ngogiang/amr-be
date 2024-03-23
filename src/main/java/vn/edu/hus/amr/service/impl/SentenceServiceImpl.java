@@ -2,6 +2,7 @@ package vn.edu.hus.amr.service.impl;
 
 import vn.edu.hus.amr.dto.FormResult;
 import vn.edu.hus.amr.dto.ResponseDTO;
+import vn.edu.hus.amr.dto.projection.SentenceDetailDTO;
 import vn.edu.hus.amr.model.AmrTree;
 import vn.edu.hus.amr.model.AppUser;
 import vn.edu.hus.amr.repository.AmrTreeRepository;
@@ -28,7 +29,10 @@ public class SentenceServiceImpl implements SentenceService {
     @Override
     public ResponseDTO getSentenceDetail(String username, Long divId, Long paragraphId, Long sentenceId) {
         try {
-            FormResult formResult = sentenceRepository.getSentenceDetail(username, divId, paragraphId, sentenceId);
+
+            FormResult formResult = new FormResult();
+            List<SentenceDetailDTO> sentenceDetailS = sentenceRepository.getSentenceDetail(username, divId, paragraphId, sentenceId);
+            formResult.setContent(sentenceDetailS);
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
