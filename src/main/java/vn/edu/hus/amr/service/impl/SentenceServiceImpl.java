@@ -42,7 +42,7 @@ public class SentenceServiceImpl implements SentenceService {
             FormResult formResult = new FormResult();
             AppUser appUser = userRepository.findByUsername(username);
             String sentencePosition = AmrTree.createSentencePosition(divId, paragraphId, sentenceId);
-            List<AmrTree> listResponse = amrTreeRepository.getByUserIdAndSentencePositionOrderById(appUser.getId(), sentencePosition);
+            List<AmrTree> listResponse = amrTreeRepository.findBySentencePosition(sentencePosition);
 
             formResult.setContent(listResponse);
             formResult.setTotalElements(Long.valueOf(listResponse.size()));

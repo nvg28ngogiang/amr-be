@@ -76,7 +76,6 @@ public class AmrServiceImpl implements AmrService {
             amrTree.setUpdateTime(new Date());
 
             AppUser appUser = userRepository.findByUsername(username);
-            amrTree.setUserId(appUser.getId());
 
             amrTreeRepository.save(amrTree);
 
