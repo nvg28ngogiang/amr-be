@@ -17,10 +17,7 @@ import vn.edu.hus.amr.util.CommonUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 @RestController
 @RequiredArgsConstructor
@@ -123,9 +120,9 @@ public class AmrController {
         return amrService.statisticUsers();
     }
 
-    @PostMapping("/import")
-    public ResponseDTO importInsert(@RequestParam MultipartFile file, @RequestBody Long importUserId) {
-        return amrService.importInsert(file, importUserId);
+    @PostMapping(value = "/imports", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseDTO importInsert(@RequestPart MultipartFile file, @RequestParam(required = false) Long importUserId, @AuthenticationPrincipal UserDetails userDetails) {
+        return amrService.importInsert(file, importUserId, userDetails.getUsername());
     }
 
     @GetMapping("/import-template")
@@ -136,8 +133,8 @@ public class AmrController {
         try {
             File file = new File(path);
             byte[] contentBytes = new byte[(int) file.length()];
-//            inputStream = new FileInputStream(file);
-//            inputStream.read(contentBytes);
+            inputStream = new FileInputStream(file);
+            inputStream.read(contentBytes);
 
             return ResponseEntity.ok().headers(CommonUtils.buildFileResponseHeader(file.getName()))
                     .body(contentBytes);
