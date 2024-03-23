@@ -184,18 +184,35 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
     }
 
     StringBuilder buildStatisticUserSQL() {
-        StringBuilder sql = new StringBuilder("select a.id as \"userId\", a.username, a.name " +
-                ", case when b.total_paragraph is not null then b.total_paragraph else 0 end as \"totalParagraph\" " +
-                ", case when c.total_amr is not null then c.total_amr else 0 end as \"totalAmr\" " +
+
+        StringBuilder sql = new StringBuilder("select " +
+                "    a.id as \"userId\", a.username, a.name , " +
+                "    case when b.total_paragraph is not null then b.total_paragraph else 0 " +
+                "      end as \"totalParagraph\" , " +
+                "    case when c.total_sentence is not null then c.total_sentence else 0 " +
+                "      end as \"totalSentence\" , " +
+                "    case when d.total_amr is not null then d.total_amr else 0 " +
+                "      end as \"totalAmr\" " +
                 "from " +
-                "app_user a " +
-                "left join ( " +
-                "   select count(*) as total_paragraph, user_id from user_paragraph " +
-                "   group by user_id " +
-                ") b on b.user_id = a.id " +
-                "left join ( " +
-                "   select count(*) as total_amr, user_id from amr_tree group by user_id " +
-                ") c on c.user_id = a.id");
+                "    app_user a " +
+                "left join  " +
+                "(select count(*) as total_paragraph, user_id " +
+                "    from user_paragraph " +
+                "    group by user_id ) b on b.user_id = a.id " +
+                "left join  " +
+                "(select count(distinct concat('d', w.div_id, 'p', w.paragraph_id, 's', w.sentence_id)) as total_sentence, user_id  " +
+                "    from word w  " +
+                "    join user_paragraph up on w.div_id = up.div_id and w.paragraph_id = up.paragraph_id " +
+                "    group by up.user_id) c on a.id = c.user_id " +
+                "left join  " +
+                "(select count(at.id) as total_amr, temp.user_id " +
+                "    from amr_tree at  " +
+                "    join  " +
+                "    (select distinct concat(w.div_id, '/', w.paragraph_id, '/', w.sentence_id) as sentence_position , user_id  " +
+                "    from word w  " +
+                "    join user_paragraph up on w.div_id = up.div_id and w.paragraph_id = up.paragraph_id) " +
+                "    temp on at.sentence_position  = temp.sentence_position " +
+                "    group by temp.user_id ) d on a.id = d.user_id");
 
         return sql;
     }

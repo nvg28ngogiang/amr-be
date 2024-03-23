@@ -40,7 +40,7 @@ public class SentenceServiceImpl implements SentenceService {
     public ResponseDTO getAmrTreeOfSentence(String username, Long divId, Long paragraphId, Long sentenceId) {
         try {
             FormResult formResult = new FormResult();
-            AppUser appUser = userRepository.findByUsername(username);
+//            AppUser appUser = userRepository.findByUsername(username);
             String sentencePosition = AmrTree.createSentencePosition(divId, paragraphId, sentenceId);
             List<AmrTree> listResponse = amrTreeRepository.findBySentencePosition(sentencePosition);
 

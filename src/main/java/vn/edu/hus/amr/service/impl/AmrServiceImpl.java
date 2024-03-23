@@ -75,7 +75,23 @@ public class AmrServiceImpl implements AmrService {
             amrTree.setSentencePosition(sentencePosition);
             amrTree.setUpdateTime(new Date());
 
-            AppUser appUser = userRepository.findByUsername(username);
+            // get list tree to remove
+            List<AmrTree> existAmrTrees = amrTreeRepository.findBySentencePosition(sentencePosition);
+
+            List<Long> deleteTreeIds = new ArrayList<>();
+            if (existAmrTrees != null && !existAmrTrees.isEmpty()) {
+                deleteTreeIds.addAll(existAmrTrees.stream().map(AmrTree::getId).filter(Objects::nonNull).collect(Collectors.toList()));
+            }
+
+            if (existAmrTrees != null && !existAmrTrees.isEmpty()) {
+                existAmrTrees = existAmrTrees.stream().filter(tree -> !Objects.equals(tree.getId(), amrTree.getId())).collect(Collectors.toList());
+            }
+
+
+            // remove all amr tree that have sentence position
+            for (AmrTree existTree : existAmrTrees) {
+                amrTreeRepository.delete(existTree);
+            }
 
             amrTreeRepository.save(amrTree);
 
@@ -119,8 +135,11 @@ public class AmrServiceImpl implements AmrService {
                 }
             }
 
+
             // remove exist amr word
-            deleteListExistAmrWord(input.getAmrTreeId());
+            for (Long deleteId : deleteTreeIds) {
+                deleteListExistAmrWord(deleteId);
+            }
 
             // create new list amr word
             List<AmrWord> amrWords = createListAmrWord(input.getNodes(), amrTree.getId());
