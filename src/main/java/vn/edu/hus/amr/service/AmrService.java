@@ -18,7 +18,7 @@ public interface AmrService {
 
     ResponseDTO statisticUsers();
 
-    ResponseDTO importInsert(MultipartFile excelDataFile, Long importUserId);
+    ResponseDTO importInsert(MultipartFile excelDataFile, Long importUserId, String username);
 
     String importTemplate();
 }
