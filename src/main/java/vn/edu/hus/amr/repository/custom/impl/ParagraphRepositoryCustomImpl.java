@@ -177,8 +177,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
 
     @Override
     public List<SentenceDTO> getAllSentenceOfUserHaveAmr(Long userId) {
-        // FIXME: Update logic get AMR trees of an user
-        List<AmrTree> amrTrees = Collections.emptyList();
+        List<AmrTree> amrTrees = amrTreeRepository.getByUserId(userId);
 
         List<SentenceDTO> result = new ArrayList<>();
         if (amrTrees != null && !amrTrees.isEmpty()) {
