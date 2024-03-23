@@ -1,6 +1,7 @@
 package vn.edu.hus.amr.service.impl;
 
 import vn.edu.hus.amr.dto.*;
+import vn.edu.hus.amr.dto.projection.SentenceDTO;
 import vn.edu.hus.amr.model.AppUser;
 import vn.edu.hus.amr.model.UserParagraph;
 import vn.edu.hus.amr.model.Word;
@@ -53,7 +54,9 @@ public class ParagraphServiceImpl implements ParagraphService {
     @Override
     public ResponseDTO getAllSentenceOfParagraph(String username, Long divId, Long paragraphId) {
         try {
-            FormResult formResult = paragraphRepository.getAllSentenceOfParagraph(username, divId, paragraphId);
+            FormResult formResult = new FormResult();
+            List<SentenceDTO> sentences = paragraphRepository.getAllSentenceOfParagraph(username, divId, paragraphId);
+            formResult.setContent(sentences);
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

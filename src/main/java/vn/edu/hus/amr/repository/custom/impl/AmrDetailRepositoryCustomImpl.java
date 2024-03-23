@@ -157,7 +157,7 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 "left join word_sense ws on aw.word_sense_id = ws.id  " +
                 "left join amr_tree at on aw.tree_id = at.id  " +
                 "LEFT JOIN user_paragraph up ON w.div_id = up.div_id AND w.paragraph_id = up.paragraph_id " +
-                "left join app_user au on up.user_id = up.user_id " +
+                "left join app_user au on au.id = up.user_id " +
                 "   where au.id = :userId  " +
                 "   order by at.sentence_position, at.id, w.word_order");
 
