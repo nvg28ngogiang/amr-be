@@ -9,6 +9,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.hus.amr.dto.*;
 import vn.edu.hus.amr.model.*;
@@ -229,7 +231,8 @@ public class AmrServiceImpl implements AmrService {
     public ResponseDTO getAmrLabels() {
         try {
             FormResult formResult = new FormResult();
-            List<AmrLabel> listData = amrLabelRepository.findAll();
+            Sort alphabeticAscSort = Sort.by(Sort.Order.asc("name"));
+            List<AmrLabel> listData = amrLabelRepository.findAll(alphabeticAscSort);
             formResult.setContent(listData);
             formResult.setTotalElements(Long.valueOf(listData.size()));
 
