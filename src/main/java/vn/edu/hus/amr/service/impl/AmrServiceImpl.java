@@ -1,5 +1,6 @@
 package vn.edu.hus.amr.service.impl;
 
+import com.google.common.collect.Iterables;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -302,6 +304,7 @@ public class AmrServiceImpl implements AmrService {
             if (listResponse == null) {
                 listResponse = new ArrayList<>();
             }
+            listResponse = updateDataForExport(listResponse);
 
             writeDataToExcelFile(listResponse, targetDirectory, exportUser.getUsername());
         }
@@ -325,6 +328,41 @@ public class AmrServiceImpl implements AmrService {
 //            writeDataToExcelFile(listResponse, targetDirectory, exportUser.getUsername());
 //        }
 //    }
+
+    private List<AmrDetailResponseDTO> updateDataForExport(List<AmrDetailResponseDTO> rawDatas) {
+        List<List<AmrDetailResponseDTO>> updateDataList = new ArrayList<>();
+
+        for (AmrDetailResponseDTO data : rawDatas) {
+            if (data.getSentencePosition() != null) {
+                List<AmrDetailResponseDTO> sentenceAmr = new ArrayList<>();
+                updateDataList.add(sentenceAmr);
+                sentenceAmr.add(data);
+            } else {
+                if (!updateDataList.isEmpty()) {
+                    List<AmrDetailResponseDTO> sentenceAmr = Iterables.getLast(updateDataList);
+                    sentenceAmr.add(data);
+                }
+            }
+        }
+
+        List<AmrDetailResponseDTO> result = new ArrayList<>();
+        for (List<AmrDetailResponseDTO> sentenceAmr : updateDataList) {
+            Long maxWordOrder = sentenceAmr.stream().filter(word -> word.getWordOrder() != null)
+                    .mapToLong(AmrDetailResponseDTO::getWordOrder)
+                    .max()
+                    .orElseThrow(NoSuchElementException::new);
+            maxWordOrder++;
+            for (AmrDetailResponseDTO word : sentenceAmr) {
+                if (Boolean.TRUE.equals(word.getIsAdditional())) {
+                    word.setWordOrder(maxWordOrder++);
+                }
+            }
+
+            result.addAll(sentenceAmr);
+        }
+
+        return result;
+    }
 
     private void writeDataToExcelFile(List<AmrDetailResponseDTO> listData, String dirPath, String username) {
         XSSFWorkbook workbook = new XSSFWorkbook();
@@ -371,34 +409,34 @@ public class AmrServiceImpl implements AmrService {
     }
 
     private List<ExcelHeaderDTO> generateHeaderList() {
+        //  id, word, pos, parent_id, label
         List<ExcelHeaderDTO> result = new ArrayList<>();
         result.add(new ExcelHeaderDTO("Sentence position", ExcelStyleUtil.MEDIUM_SIZE));
-        result.add(new ExcelHeaderDTO("Word id", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Word content", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Pos label", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Parent id", ExcelStyleUtil.MEDIUM_SIZE));
-        result.add(new ExcelHeaderDTO("Amr label id", ExcelStyleUtil.MEDIUM_SIZE));
-        result.add(new ExcelHeaderDTO("Amr label content", ExcelStyleUtil.MEDIUM_SIZE));
-        result.add(new ExcelHeaderDTO("Word sense id", ExcelStyleUtil.MEDIUM_SIZE));
-        result.add(new ExcelHeaderDTO("Word sense", ExcelStyleUtil.BIG_SIZE));
         result.add(new ExcelHeaderDTO("Word label", ExcelStyleUtil.MEDIUM_SIZE));
         return result;
     }
 
     private List<Object> generateDataObject(AmrDetailResponseDTO data) {
+        //  id, word, pos, parent_id, label
         List<Object> result = new ArrayList<>();
-        result.add(data.getSentencePosition() != null ? data.getSentencePosition() : "");
-        result.add(data.getWordId() != null ? data.getWordId() : "");
+        result.add(isRoot(data) ? data.getSentencePosition() : (data.getWordOrder() != null ? data.getWordOrder() : ""));
         result.add(data.getWordContent() != null ? data.getWordContent() : "");
-        result.add(data.getPosLabel() != null ? data.getPosLabel() : "");
-        result.add(data.getParentId() != null ? data.getParentId() : "");
-        result.add(data.getAmrLabelId() != null ? data.getAmrLabelId() : "");
-        result.add(data.getAmrLabelContent() != null ? data.getAmrLabelContent() : "");
-        result.add(data.getWordSenseId() != null ? data.getWordSenseId() : "");
-        result.add(data.getWordSense() != null ? data.getWordSense() : "");
-        result.add(data.getWordLabel() != null ? data.getWordLabel() : "");
+        result.add(data.getPosLabel() != null ? data.getPosLabel() : "_");
+        result.add(data.getParentId() != null ? data.getParentId() :
+                (isRoot(data) ? 0 : "_"));
+        result.add(data.getWordLabel() != null ? data.getWordLabel() :
+                (isRoot(data) ? "root" : "_"));
         return result;
     }
+
+    private boolean isRoot(AmrDetailResponseDTO word) {
+        return word.getSentencePosition() != null;
+    }
+
+
 
     @Override
     public String exportDocumentFile(String username, ExportRequestDTO input) {
