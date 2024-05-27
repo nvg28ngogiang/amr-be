@@ -357,7 +357,7 @@ public class AmrServiceImpl implements AmrService {
                     word.setWordOrder(maxWordOrder++);
                 }
             }
-
+            Collections.sort(sentenceAmr, Comparator.comparingLong(AmrDetailResponseDTO::getWordOrder));
             result.addAll(sentenceAmr);
         }
 
