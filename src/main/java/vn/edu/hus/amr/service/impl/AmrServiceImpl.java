@@ -421,10 +421,10 @@ public class AmrServiceImpl implements AmrService {
         //  id, word, pos, parent_id, label
         List<ExcelHeaderDTO> result = new ArrayList<>();
         result.add(new ExcelHeaderDTO("Sentence position", ExcelStyleUtil.MEDIUM_SIZE));
-        result.add(new ExcelHeaderDTO("Word Id", ExcelStyleUtil.MEDIUM_SIZE));
+        result.add(new ExcelHeaderDTO("Word order", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Word content", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Pos label", ExcelStyleUtil.MEDIUM_SIZE));
-        result.add(new ExcelHeaderDTO("Parent id", ExcelStyleUtil.MEDIUM_SIZE));
+        result.add(new ExcelHeaderDTO("Parent order", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Word label", ExcelStyleUtil.MEDIUM_SIZE));
         return result;
     }
@@ -433,10 +433,10 @@ public class AmrServiceImpl implements AmrService {
         //  id, word, pos, parent_id, label
         List<Object> result = new ArrayList<>();
         result.add(isRoot(data) ? data.getSentencePosition() : "");
-        result.add(data.getWordId() != null ? data.getWordId() : "");
+        result.add(data.getWordOrder() != null ? data.getWordOrder() : "");
         result.add(data.getWordContent() != null ? data.getWordContent() : "");
         result.add(data.getPosLabel() != null ? data.getPosLabel() : "_");
-        result.add(data.getParentId() != null ? data.getParentId() :
+        result.add(data.getParentOrder() != null ? data.getParentOrder() :
                 (isRoot(data) ? 0 : "_"));
         result.add(data.getWordLabel() != null ? data.getWordLabel() :
                 (isRoot(data) ? "root" : "_"));
