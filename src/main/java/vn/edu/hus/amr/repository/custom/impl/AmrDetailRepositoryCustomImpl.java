@@ -149,7 +149,7 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 "    aw.word_label as \"wordLabel\", aw.word_sense_id as \"wordSenseId\",  " +
                 "    w.pos_label as \"posLabel\", ws.sense as \"wordSense\", " +
                 "    at.sentence_position as \"sentencePosition\", " +
-                "    w.word_order as \"wordOrder\", pw.word_order as \"parentOrder\" " +
+                "    w.word_order as \"wordOrder\", pw.word_order as \"parentOrder\", " +
                 "    au.username, at.update_time as \"updateTime\"," +
                 "    w.is_additional as \"isAdditional\"  " +
                 "from amr_word aw  " +
