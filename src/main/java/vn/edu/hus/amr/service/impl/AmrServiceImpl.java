@@ -358,6 +358,15 @@ public class AmrServiceImpl implements AmrService {
                 }
             }
             Collections.sort(sentenceAmr, Comparator.comparingLong(AmrDetailResponseDTO::getWordOrder));
+            for (AmrDetailResponseDTO word : sentenceAmr) {
+                if (word.getParentId() != null) {
+                    for (AmrDetailResponseDTO other : sentenceAmr) {
+                        if (word.getParentId().equals(other.getWordId())) {
+                            word.setParentId(other.getWordId());
+                        }
+                    }
+                }
+            }
             result.addAll(sentenceAmr);
         }
 
@@ -412,6 +421,7 @@ public class AmrServiceImpl implements AmrService {
         //  id, word, pos, parent_id, label
         List<ExcelHeaderDTO> result = new ArrayList<>();
         result.add(new ExcelHeaderDTO("Sentence position", ExcelStyleUtil.MEDIUM_SIZE));
+        result.add(new ExcelHeaderDTO("Word Id", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Word content", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Pos label", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Parent id", ExcelStyleUtil.MEDIUM_SIZE));
@@ -422,7 +432,8 @@ public class AmrServiceImpl implements AmrService {
     private List<Object> generateDataObject(AmrDetailResponseDTO data) {
         //  id, word, pos, parent_id, label
         List<Object> result = new ArrayList<>();
-        result.add(isRoot(data) ? data.getSentencePosition() : (data.getWordOrder() != null ? data.getWordOrder() : ""));
+        result.add(isRoot(data) ? data.getSentencePosition() : "");
+        result.add(data.getWordId() != null ? data.getWordId() : "");
         result.add(data.getWordContent() != null ? data.getWordContent() : "");
         result.add(data.getPosLabel() != null ? data.getPosLabel() : "_");
         result.add(data.getParentId() != null ? data.getParentId() :
