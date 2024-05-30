@@ -22,6 +22,7 @@ public class AmrDetailResponseDTO {
     private String sentencePosition;
 
     private Long wordOrder;
+    private Long parentOrder;
     private Long correfId;
     private String correfPosition;
 

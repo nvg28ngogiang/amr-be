@@ -482,10 +482,10 @@ public class AmrServiceImpl implements AmrService {
         //  id, word, pos, parent_id, label
         List<ExcelHeaderDTO> result = new ArrayList<>();
         result.add(new ExcelHeaderDTO("Sentence position", ExcelStyleUtil.MEDIUM_SIZE));
-        result.add(new ExcelHeaderDTO("Word Id", ExcelStyleUtil.MEDIUM_SIZE));
+        result.add(new ExcelHeaderDTO("Word order", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Word content", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Pos label", ExcelStyleUtil.MEDIUM_SIZE));
-        result.add(new ExcelHeaderDTO("Parent id", ExcelStyleUtil.MEDIUM_SIZE));
+        result.add(new ExcelHeaderDTO("Parent order", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Word label", ExcelStyleUtil.MEDIUM_SIZE));
         return result;
     }
