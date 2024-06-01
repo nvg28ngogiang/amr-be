@@ -340,13 +340,17 @@ public class AmrServiceImpl implements AmrService {
             if (data.getSentencePosition() != null) {
                 List<AmrDetailResponseDTO> sentenceAmr = new ArrayList<>();
                 updateDataList.add(sentenceAmr);
-                data.setParentId(0L); // root
                 sentenceAmr.add(data);
             } else {
                 if (!updateDataList.isEmpty()) {
                     List<AmrDetailResponseDTO> sentenceAmr = Iterables.getLast(updateDataList);
                     sentenceAmr.add(data);
                 }
+            }
+
+            // root
+            if (data.getParentId() == null) {
+                data.setParentId(0L);
             }
         }
 
@@ -384,13 +388,16 @@ public class AmrServiceImpl implements AmrService {
 
     private void updateSentencePosition(List<AmrDetailResponseDTO> sentenceAmr, String sentencePosition) {
         for (int i = 0; i < sentenceAmr.size(); i++) {
-            if (i == 0 && sentenceAmr.get(i).getParentId() != null && sentenceAmr.get(i).getParentId().equals(0L)) {
-                return;
+            if (i == 0 && isRoot(sentenceAmr.get(i))) {
+                sentenceAmr.get(i).setSentencePosition(sentencePosition);
             }
             if (i == 0 && !isRoot(sentenceAmr.get(i))) {
                 sentenceAmr.get(i).setSentencePosition(sentencePosition);
             }
             if (i != 0 && isRoot(sentenceAmr.get(i))) {
+                sentenceAmr.get(i).setSentencePosition(null);
+            }
+            if (i != 0 && !isRoot(sentenceAmr.get(i))) {
                 sentenceAmr.get(i).setSentencePosition(null);
             }
         }
