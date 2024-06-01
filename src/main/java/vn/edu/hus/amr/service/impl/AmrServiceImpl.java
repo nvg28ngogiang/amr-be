@@ -358,6 +358,7 @@ public class AmrServiceImpl implements AmrService {
         String sentencePosition;
         for (List<AmrDetailResponseDTO> sentenceAmr : updateDataList) {
             sentencePosition = sentenceAmr.get(0).getSentencePosition();
+            addRemainWord(mapWordBySentencePosition, sentenceAmr, sentencePosition);
             Long maxWordOrder = sentenceAmr.stream().filter(word -> word.getWordOrder() != null)
                     .mapToLong(AmrDetailResponseDTO::getWordOrder)
                     .max()
@@ -368,7 +369,6 @@ public class AmrServiceImpl implements AmrService {
                     word.setWordOrder(maxWordOrder++);
                 }
             }
-            addRemainWord(mapWordBySentencePosition, sentenceAmr, sentencePosition);
             Collections.sort(sentenceAmr, Comparator.comparingLong(AmrDetailResponseDTO::getWordOrder));
             updateSentencePosition(sentenceAmr, sentencePosition);
             for (AmrDetailResponseDTO word : sentenceAmr) {
@@ -506,9 +506,8 @@ public class AmrServiceImpl implements AmrService {
         result.add(data.getWordContent() != null ? data.getWordContent() : "");
         result.add(data.getPosLabel() != null ? data.getPosLabel() : "_");
         result.add(data.getParentId() != null ? data.getParentId() : "_");
-        result.add(data.getAmrLabelContent() != null ? data.getAmrLabelContent() : "_");
-        result.add(data.getWordLabel() != null ? data.getWordLabel() :
-                (isRoot(data) ? "root" : "_"));
+        result.add(isRoot(data) ? "root" : (data.getAmrLabelContent() != null ? data.getAmrLabelContent() : "_"));
+        result.add(data.getWordLabel() != null ? data.getWordLabel() : "_");
         return result;
     }
 

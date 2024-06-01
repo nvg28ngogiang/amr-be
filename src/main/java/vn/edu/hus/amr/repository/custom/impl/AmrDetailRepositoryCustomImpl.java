@@ -161,7 +161,12 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 "LEFT JOIN user_paragraph up ON w.div_id = up.div_id AND w.paragraph_id = up.paragraph_id " +
                 "left join app_user au on au.id = up.user_id " +
                 "   where au.id = :userId  " +
-                "   order by at.sentence_position, at.id, w.word_order");
+                "   order by " +
+                "   CAST(split_part(at.sentence_position, '/', 1) AS INTEGER), " +
+                "    CAST(split_part(at.sentence_position, '/', 2) AS INTEGER), " +
+                "    CAST(split_part(at. sentence_position, '/', 3) AS INTEGER), " +
+//                "   at.sentence_position, " +
+                "at.id, w.word_order");
 
         return sql;
     }
