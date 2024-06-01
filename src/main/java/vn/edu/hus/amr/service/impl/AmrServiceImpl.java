@@ -493,6 +493,7 @@ public class AmrServiceImpl implements AmrService {
         result.add(new ExcelHeaderDTO("Word content", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Pos label", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Parent order", ExcelStyleUtil.MEDIUM_SIZE));
+        result.add(new ExcelHeaderDTO("AMR Label", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Word label", ExcelStyleUtil.MEDIUM_SIZE));
         return result;
     }
@@ -505,7 +506,8 @@ public class AmrServiceImpl implements AmrService {
         result.add(data.getWordContent() != null ? data.getWordContent() : "");
         result.add(data.getPosLabel() != null ? data.getPosLabel() : "_");
         result.add(data.getParentId() != null ? data.getParentId() : "_");
-        result.add(isRoot(data) ? "root" : (StringUtils.isNotNUll(data.getWordLabel()) ? data.getWordLabel() : "_"));
+        result.add(isRoot(data) ? "root" : (data.getAmrLabelContent() != null ? data.getAmrLabelContent() : "_"));
+        result.add(data.getWordLabel() != null ? data.getWordLabel() : "_");
         return result;
     }
 
