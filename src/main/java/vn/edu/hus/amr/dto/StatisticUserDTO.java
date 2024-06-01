@@ -9,4 +9,5 @@ public class StatisticUserDTO {
     private String name;
     private Long totalParagraph;
     private Long totalAmr;
+    private Long totalSentence;
 }

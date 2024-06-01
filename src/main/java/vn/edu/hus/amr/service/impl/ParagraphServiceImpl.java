@@ -1,6 +1,7 @@
 package vn.edu.hus.amr.service.impl;
 
 import vn.edu.hus.amr.dto.*;
+import vn.edu.hus.amr.dto.projection.SentenceDTO;
 import vn.edu.hus.amr.model.AppUser;
 import vn.edu.hus.amr.model.UserParagraph;
 import vn.edu.hus.amr.model.Word;
@@ -34,7 +35,7 @@ public class ParagraphServiceImpl implements ParagraphService {
             FormResult formResult = paragraphRepository.getParagraphPaging(username, first, rows, numOfWords);
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }
@@ -45,7 +46,7 @@ public class ParagraphServiceImpl implements ParagraphService {
             FormResult formResult = paragraphRepository.getParagraphPaging(null, first, rows, numOfWords);
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }
@@ -53,10 +54,12 @@ public class ParagraphServiceImpl implements ParagraphService {
     @Override
     public ResponseDTO getAllSentenceOfParagraph(String username, Long divId, Long paragraphId) {
         try {
-            FormResult formResult = paragraphRepository.getAllSentenceOfParagraph(username, divId, paragraphId);
+            FormResult formResult = new FormResult();
+            List<SentenceDTO> sentences = paragraphRepository.getAllSentenceOfParagraph(username, divId, paragraphId);
+            formResult.setContent(sentences);
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }
@@ -74,7 +77,7 @@ public class ParagraphServiceImpl implements ParagraphService {
                 return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, "This word is not exist", null);
             }
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }
@@ -85,7 +88,7 @@ public class ParagraphServiceImpl implements ParagraphService {
             FormResult formResult = paragraphRepository.getAssingUsers(divId, paragraphId);
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }
@@ -125,7 +128,7 @@ public class ParagraphServiceImpl implements ParagraphService {
             FormResult formResult1 = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId());
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Update assign user successfully", formResult1);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }
@@ -139,29 +142,32 @@ public class ParagraphServiceImpl implements ParagraphService {
             List<Long> userIds = input.getUserIds();
             List<AppUser> existUsers = userRepository.findByIdIn(userIds);
             List<Long> existUserIds = existUsers.stream().map(AppUser::getId).collect(Collectors.toList());
-            List<Long> notExistDB = userIds.stream().filter(inputId -> !existUserIds.contains(inputId)).collect(Collectors.toList());
 
-            // check user exist in user-paragraph
-            List<UserParagraph> existUserParagraphs = userParagraphRepository.findByDivIdAndParagraphIdAndUserIdIn(input.getDivId(), input.getParagraphId(), existUserIds);
-            List<Long> existUserParaIds = existUserParagraphs.stream().map(UserParagraph::getUserId).collect(Collectors.toList());
-            List<Long> notExistUserParagraphs = existUserIds.stream().filter(id -> !existUserParaIds.contains(id)).collect(Collectors.toList());
-
-            // save list user
-            UserParagraph item;
             List<UserParagraph> listInsert = new ArrayList<>();
-            for (Long userId : notExistUserParagraphs) {
-                item = new UserParagraph();
-                item.setDivId(input.getDivId());
-                item.setParagraphId(input.getParagraphId());
-                item.setUserId(userId);
-                listInsert.add(item);
+            // check user exist in user-paragraph
+            for (ParagraphPosition paragraphPosition : input.getParagraphPositions()) {
+                Long divId = paragraphPosition.getDivId();
+                Long paragraphId = paragraphPosition.getParagraphId();
+                List<UserParagraph> existUserParagraphs = userParagraphRepository.findByDivIdAndParagraphIdAndUserIdIn(divId, paragraphId, existUserIds);
+                List<Long> existUserParaIds = existUserParagraphs.stream().map(UserParagraph::getUserId).collect(Collectors.toList());
+                List<Long> notExistUserParagraphs = existUserIds.stream().filter(id -> !existUserParaIds.contains(id)).collect(Collectors.toList());
+
+                // save list user
+                UserParagraph item;
+                for (Long userId : notExistUserParagraphs) {
+                    item = new UserParagraph();
+                    item.setDivId(divId);
+                    item.setParagraphId(paragraphId);
+                    item.setUserId(userId);
+                    listInsert.add(item);
+                }
             }
 
             userParagraphRepository.saveAll(listInsert);
-            FormResult formResult1 = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId());
-            return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, String.format("Insert %d/%d users", listInsert.size(), userIds.size()), formResult1);
+//            FormResult formResult1 = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId());
+            return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, String.format("Insert %d/%d users", listInsert.size(), userIds.size()), null);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }
@@ -180,7 +186,7 @@ public class ParagraphServiceImpl implements ParagraphService {
             FormResult formResult1 = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId());
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, String.format("Delete %d/%d users", existUserParagraphs.size(), userIds.size()), formResult1);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }

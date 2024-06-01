@@ -40,6 +40,7 @@ public class UserServiceImpl implements UserService {
 
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "success", userDataDTO);
         } catch (AuthenticationException e) {
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.UNAUTHORIZED.value(), Constants.STATUS_CODE.ERROR, "Username or password is invalid", null);
         }
     }
@@ -82,7 +83,7 @@ public class UserServiceImpl implements UserService {
             formResult.setTotalElements(Long.valueOf(listDataResponse.size()));
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }
@@ -94,7 +95,7 @@ public class UserServiceImpl implements UserService {
             UserDataDTO userDataDTO = mapUserToResponseNoToken(appUser);
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", userDataDTO);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }
