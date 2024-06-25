@@ -182,12 +182,21 @@ public class ParagraphServiceImpl implements ParagraphService {
             // check user exist in user-paragraph
 //            List<Long> userIds = input.getUsers().stream().map(UserDataDTO::getId).collect(Collectors.toList());
             List<Long> userIds = input.getUserIds();
-            List<UserParagraph> existUserParagraphs = userParagraphRepository.findByDivIdAndParagraphIdAndUserIdIn(input.getDivId(), input.getParagraphId(), userIds);
+            List<UserParagraph> existUserParagraphs = userParagraphRepository.findByDivIdAndParagraphIdAndLevelAndUserIdIn(
+                    input.getDivId(),
+                    input.getParagraphId(),
+                    input.getLevel(),
+                    userIds
+            );
 
             // delete list user
-            userParagraphRepository.deleteAll(existUserParagraphs);
-            FormResult formResult1 = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId());
-            return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, String.format("Delete %d/%d users", existUserParagraphs.size(), userIds.size()), formResult1);
+            if (existUserParagraphs != null && !existUserParagraphs.isEmpty()) {
+                userParagraphRepository.deleteAll(existUserParagraphs);
+                FormResult formResult1 = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId());
+                return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, String.format("Delete %d/%d users", existUserParagraphs.size(), userIds.size()), formResult1);
+            } else {
+                return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "No user and paragraph found!", null);
+            }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
