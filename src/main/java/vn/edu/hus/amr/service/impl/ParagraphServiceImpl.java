@@ -142,13 +142,15 @@ public class ParagraphServiceImpl implements ParagraphService {
             List<Long> userIds = input.getUserIds();
             List<AppUser> existUsers = userRepository.findByIdIn(userIds);
             List<Long> existUserIds = existUsers.stream().map(AppUser::getId).collect(Collectors.toList());
+            Long level = input.getLevel();
 
             List<UserParagraph> listInsert = new ArrayList<>();
             // check user exist in user-paragraph
             for (ParagraphPosition paragraphPosition : input.getParagraphPositions()) {
                 Long divId = paragraphPosition.getDivId();
                 Long paragraphId = paragraphPosition.getParagraphId();
-                List<UserParagraph> existUserParagraphs = userParagraphRepository.findByDivIdAndParagraphIdAndUserIdIn(divId, paragraphId, existUserIds);
+//                List<UserParagraph> existUserParagraphs = userParagraphRepository.findByDivIdAndParagraphIdAndUserIdIn(divId, paragraphId, existUserIds);
+                List<UserParagraph> existUserParagraphs = userParagraphRepository.findByDivIdAndParagraphIdAndLevelAndUserIdIn(divId, paragraphId, level, existUserIds);
                 List<Long> existUserParaIds = existUserParagraphs.stream().map(UserParagraph::getUserId).collect(Collectors.toList());
                 List<Long> notExistUserParagraphs = existUserIds.stream().filter(id -> !existUserParaIds.contains(id)).collect(Collectors.toList());
 
@@ -159,6 +161,7 @@ public class ParagraphServiceImpl implements ParagraphService {
                     item.setDivId(divId);
                     item.setParagraphId(paragraphId);
                     item.setUserId(userId);
+                    item.setLevel(level);
                     listInsert.add(item);
                 }
             }
