@@ -21,9 +21,10 @@ public class ParagraphController {
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(name = "first") Integer first,
             @RequestParam(name = "rows") Integer rows,
-            @RequestParam(name = "numOfWords") Integer numOfWords
+            @RequestParam(name = "numOfWords") Integer numOfWords,
+            @RequestParam(name = "level") Integer level
     ) {
-        return paragraphService.getParagraphPagination(userDetails.getUsername(), first, rows, numOfWords);
+        return paragraphService.getParagraphPagination(userDetails.getUsername(), first, rows, numOfWords, level);
     }
 
     @GetMapping("/all")

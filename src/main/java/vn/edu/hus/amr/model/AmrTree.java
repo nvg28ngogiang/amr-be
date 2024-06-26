@@ -23,6 +23,9 @@ public class AmrTree {
     @Column(name = "update_time")
     private Date updateTime;
 
+    @Column(name = "status")
+    private Integer status;
+
     public static String createSentencePosition(Long divId, Long paragraphId, Long sentenceId) {
         return divId + "/" + paragraphId + "/" + sentenceId;
     }

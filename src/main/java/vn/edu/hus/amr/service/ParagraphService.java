@@ -8,7 +8,8 @@ public interface ParagraphService {
     ResponseDTO getParagraphPagination(String username,
                                        Integer first,
                                        Integer rows,
-                                       Integer numOfWords);
+                                       Integer numOfWords,
+                                       Integer level);
 
     ResponseDTO getParagraphPagination(Integer first,
                                        Integer rows,

@@ -28,18 +28,21 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
     private final AmrTreeRepository amrTreeRepository;
 
     @Override
-    public FormResult getParagraphPaging(String username, Integer first, Integer rows, Integer numOfWords) {
+    public FormResult getParagraphPaging(String username, Integer first, Integer rows, Integer numOfWords, Integer level) {
         FormResult result = new FormResult();
         StringBuilder sqlCount = new StringBuilder("select count(*) from ( ");
         StringBuilder sql;
         if (StringUtils.isNotNUll(username)) {
-            sql = generateGetPagingSQL(true);
+            sql = generateGetPagingSQL(true, level);
         } else {
-            sql = generateGetPagingSQL(false);
+            sql = generateGetPagingSQL(false, null);
         }
         Map<String, Object> params = new HashMap<>();
         if (StringUtils.isNotNUll(username)) {
             params.put("username", username);
+        }
+        if (level != null) {
+            params.put("level", level);
         }
 
         params.put("numOfWords", numOfWords);
@@ -88,7 +91,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
         return result;
     }
 
-    private StringBuilder generateGetPagingSQL(boolean isGetByUser) {
+    private StringBuilder generateGetPagingSQL(boolean isGetByUser, Integer level) {
         StringBuilder sql = new StringBuilder("select " +
                 "a.div_id as divId " +
                 ", a.paragraph_id as paragraphId " +
@@ -108,6 +111,9 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
             sql.append(" join user_paragraph b on a.div_id = b.div_id and a.paragraph_id = b.paragraph_id " +
                     " join app_user c on c.id = b.user_id " +
                     " where c.username = :username ");
+            if (level != null) {
+                sql.append(" and b.level = :level");
+            }
         }
         sql.append(" order by a.div_id, a.paragraph_id ");
 

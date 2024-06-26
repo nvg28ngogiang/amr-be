@@ -30,9 +30,9 @@ public class ParagraphServiceImpl implements ParagraphService {
     private final ParagraphRepository paragraphRepository;
     private final UserParagraphRepository userParagraphRepository;
     @Override
-    public ResponseDTO getParagraphPagination(String username, Integer first, Integer rows, Integer numOfWords) {
+    public ResponseDTO getParagraphPagination(String username, Integer first, Integer rows, Integer numOfWords, Integer level) {
         try {
-            FormResult formResult = paragraphRepository.getParagraphPaging(username, first, rows, numOfWords);
+            FormResult formResult = paragraphRepository.getParagraphPaging(username, first, rows, numOfWords, level);
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -43,7 +43,7 @@ public class ParagraphServiceImpl implements ParagraphService {
     @Override
     public ResponseDTO getParagraphPagination(Integer first, Integer rows, Integer numOfWords) {
         try {
-            FormResult formResult = paragraphRepository.getParagraphPaging(null, first, rows, numOfWords);
+            FormResult formResult = paragraphRepository.getParagraphPaging(null, first, rows, numOfWords, null);
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
