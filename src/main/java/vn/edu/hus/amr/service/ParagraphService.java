@@ -15,7 +15,7 @@ public interface ParagraphService {
                                        Integer rows,
                                        Integer numOfWords);
 
-    ResponseDTO getAllSentenceOfParagraph(String username, Long divId, Long paragraphId);
+    ResponseDTO getAllSentenceOfParagraph(String username, Long divId, Long paragraphId, Integer status);
 
     ResponseDTO updatePosLabel(Long id, WordRequestDTO input);
 

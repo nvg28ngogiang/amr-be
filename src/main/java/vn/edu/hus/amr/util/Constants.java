@@ -13,15 +13,4 @@ public class Constants {
         Integer OK = 1;
         Integer UN_AUTHENTICATE = 2;
     }
-
-    public interface SentenceStatus {
-        Integer PENDING_LEVEL_1 = 1;
-        Integer PENDING_LEVEL_2 = 2;
-        Integer COMPLETED_LEVEL_2 = 3;
-    }
-
-    public interface SentenceRole {
-        Integer DONE = 1;
-        Integer REVISE = 2;
-    }
 }

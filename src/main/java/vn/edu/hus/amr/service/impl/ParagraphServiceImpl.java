@@ -1,10 +1,13 @@
 package vn.edu.hus.amr.service.impl;
 
+import org.springframework.beans.factory.annotation.Value;
 import vn.edu.hus.amr.dto.*;
 import vn.edu.hus.amr.dto.projection.SentenceDTO;
+import vn.edu.hus.amr.model.AmrTree;
 import vn.edu.hus.amr.model.AppUser;
 import vn.edu.hus.amr.model.UserParagraph;
 import vn.edu.hus.amr.model.Word;
+import vn.edu.hus.amr.repository.AmrTreeRepository;
 import vn.edu.hus.amr.repository.ParagraphRepository;
 import vn.edu.hus.amr.repository.UserParagraphRepository;
 import vn.edu.hus.amr.repository.UserRepository;
@@ -19,8 +22,8 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +32,9 @@ public class ParagraphServiceImpl implements ParagraphService {
     private final UserRepository userRepository;
     private final ParagraphRepository paragraphRepository;
     private final UserParagraphRepository userParagraphRepository;
+    private final AmrTreeRepository amrTreeRepository;
+    @Value("${sentence.status.max}")
+    private Integer maxLevel;
     @Override
     public ResponseDTO getParagraphPagination(String username, Integer first, Integer rows, Integer numOfWords, Integer level) {
         try {
@@ -52,10 +58,28 @@ public class ParagraphServiceImpl implements ParagraphService {
     }
 
     @Override
-    public ResponseDTO getAllSentenceOfParagraph(String username, Long divId, Long paragraphId) {
+    public ResponseDTO getAllSentenceOfParagraph(String username, Long divId, Long paragraphId, Integer status) {
         try {
             FormResult formResult = new FormResult();
-            List<SentenceDTO> sentences = paragraphRepository.getAllSentenceOfParagraph(username, divId, paragraphId);
+            List<SentenceDTO> sentences = new ArrayList<>();
+            String paragraphPosition = divId + "/" + paragraphId + "/";
+
+            if (status == 1) {
+                List<Integer> otherStatuses = IntStream.rangeClosed(2, maxLevel).boxed().collect(Collectors.toList());
+                List<AmrTree> otherAmrTree = amrTreeRepository
+                        .findBySentencePositionStartWithAndStatusIn(paragraphPosition, otherStatuses);
+                List<String> otherSentences = otherAmrTree.stream().map(AmrTree::getSentencePosition).collect(Collectors.toList());
+
+                sentences = paragraphRepository.getAllSentenceOfParagraphBySentencePositionNotIn(username, divId, paragraphId, otherSentences);
+            } else {
+                List<AmrTree> anrTrees = amrTreeRepository
+                        .findBySentencePositionStartWithAndStatus(paragraphPosition, status);
+                List<String> sentencePositions = anrTrees.stream().map(AmrTree::getSentencePosition).collect(Collectors.toList());
+
+                sentences = paragraphRepository.getAllSentenceOfParagraphBySentencePositionIn(username, divId, paragraphId, sentencePositions);
+            }
+
+//            sentences = paragraphRepository.getAllSentenceOfParagraph(username, divId, paragraphId);
             formResult.setContent(sentences);
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {

@@ -39,8 +39,10 @@ public class ParagraphController {
     @GetMapping(params = {"divId", "paragraphId"})
     public ResponseDTO getAllSentenceOfParagraph(@AuthenticationPrincipal UserDetails userDetails,
                                                  @RequestParam(name = "divId") Long divId,
-                                                 @RequestParam(name = "paragraphId") Long paragraphId) {
-        return paragraphService.getAllSentenceOfParagraph(userDetails.getUsername(), divId, paragraphId);
+                                                 @RequestParam(name = "paragraphId") Long paragraphId,
+                                                 @RequestParam(name = "status") Integer status
+    ) {
+        return paragraphService.getAllSentenceOfParagraph(userDetails.getUsername(), divId, paragraphId, status);
     }
 
     @PutMapping("/words/{id}/pos-label")
