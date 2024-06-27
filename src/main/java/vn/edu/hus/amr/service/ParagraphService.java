@@ -19,7 +19,7 @@ public interface ParagraphService {
 
     ResponseDTO updatePosLabel(Long id, WordRequestDTO input);
 
-    ResponseDTO getAssignUsers(Long divId, Long paragraphId);
+    ResponseDTO getAssignUsers(Long divId, Long paragraphId, Long level);
 
     ResponseDTO saveUserParagraph(UserParagraphDTO input);
 

@@ -224,12 +224,13 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
     }
 
     @Override
-    public FormResult getAssingUsers(Long divId, Long paragraphId) {
+    public FormResult getAssingUsers(Long divId, Long paragraphId, Long level) {
         FormResult result = new FormResult();
         StringBuilder sql = generateAssignUsersSQL();
         Map<String, Object> params = new HashMap<>();
         params.put("divId", divId);
         params.put("paragraphId", paragraphId);
+        params.put("level", level);
         Query query = entityManager.createNativeQuery(sql.toString());
         if (params.size() > 0) {
             for (Map.Entry<String, Object> param : params.entrySet()) {
@@ -256,7 +257,7 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
         StringBuilder sql = new StringBuilder("select a.id, a.username as username, a.name " +
                 "from app_user a " +
                 "join user_paragraph b on a.id = b.user_id  " +
-                "where b.div_id = :divId and b.paragraph_id = :paragraphId");
+                "where b.div_id = :divId and b.paragraph_id = :paragraphId and b.level =:level");
         return sql;
     }
 }

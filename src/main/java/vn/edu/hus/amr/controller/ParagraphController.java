@@ -54,8 +54,10 @@ public class ParagraphController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/assign-users")
     public ResponseDTO getAssignUsers(@RequestParam(name = "divId") Long divId,
-                                      @RequestParam(name = "paragraphId") Long paragraphId) {
-        return paragraphService.getAssignUsers(divId, paragraphId);
+                                      @RequestParam(name = "paragraphId") Long paragraphId,
+                                      @RequestParam(name = "level") Long level
+    ) {
+        return paragraphService.getAssignUsers(divId, paragraphId, level);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

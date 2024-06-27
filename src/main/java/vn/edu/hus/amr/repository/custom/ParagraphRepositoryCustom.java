@@ -10,7 +10,7 @@ public interface ParagraphRepositoryCustom {
 
 //    FormResult getAllSentenceOfParagraph(String username, Long divId, Long paragraphId);
 
-    FormResult getAssingUsers(Long divId, Long paragraphId);
+    FormResult getAssingUsers(Long divId, Long paragraphId, Long level);
 
     List<SentenceDTO> getAllSentenceOfUserHaveAmr(Long userId);
 }

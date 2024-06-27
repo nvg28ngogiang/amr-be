@@ -111,9 +111,9 @@ public class ParagraphServiceImpl implements ParagraphService {
     }
 
     @Override
-    public ResponseDTO getAssignUsers(Long divId, Long paragraphId) {
+    public ResponseDTO getAssignUsers(Long divId, Long paragraphId, Long level) {
         try {
-            FormResult formResult = paragraphRepository.getAssingUsers(divId, paragraphId);
+            FormResult formResult = paragraphRepository.getAssingUsers(divId, paragraphId, level);
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -125,7 +125,7 @@ public class ParagraphServiceImpl implements ParagraphService {
     @Transactional
     public ResponseDTO saveUserParagraph(UserParagraphDTO input) {
         try {
-            FormResult formResult = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId());
+            FormResult formResult = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId(), input.getLevel());
             List<UserDataDTO> listAssignUsersDB = (List<UserDataDTO>) formResult.getContent();
             List<Long> listAssignUserIdDB = listAssignUsersDB.stream().map(UserDataDTO::getId).collect(Collectors.toList());
             List<UserDataDTO> listUserInput = input.getUsers();
@@ -148,12 +148,13 @@ public class ParagraphServiceImpl implements ParagraphService {
                 item.setDivId(input.getDivId());
                 item.setParagraphId(input.getParagraphId());
                 item.setUserId(userId);
+                item.setLevel(input.getLevel());
                 listInsert.add(item);
             }
 
             userParagraphRepository.saveAll(listInsert);
 
-            FormResult formResult1 = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId());
+            FormResult formResult1 = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId(), input.getLevel());
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Update assign user successfully", formResult1);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -220,7 +221,7 @@ public class ParagraphServiceImpl implements ParagraphService {
             // delete list user
             if (existUserParagraphs != null && !existUserParagraphs.isEmpty()) {
                 userParagraphRepository.deleteAll(existUserParagraphs);
-                FormResult formResult1 = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId());
+                FormResult formResult1 = paragraphRepository.getAssingUsers(input.getDivId(), input.getParagraphId(), input.getLevel());
                 return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, String.format("Delete %d/%d users", existUserParagraphs.size(), userIds.size()), formResult1);
             } else {
                 return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "No user and paragraph found!", null);
