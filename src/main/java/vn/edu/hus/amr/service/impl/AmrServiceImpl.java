@@ -10,6 +10,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.multipart.MultipartFile;
@@ -46,6 +47,12 @@ public class AmrServiceImpl implements AmrService {
     private final SentenceRepository sentenceRepository;
 
     private final UserParagraphRepository userParagraphRepository;
+    @Value("${sentence.status.min}")
+    private Integer MIN_STATUS;
+
+    @Value("${sentence.status.max}")
+    private Integer MAX_STATUS;
+
     @Override
     public ResponseDTO getAmrDetail(String username, Long treeId) {
         try {
@@ -65,6 +72,7 @@ public class AmrServiceImpl implements AmrService {
             if (input.getAmrTreeId() == null) {
                 // create new amr tree
                 amrTree = new AmrTree();
+                amrTree.setStatus(MIN_STATUS);
             } else {
                 // update tree
                 Optional<AmrTree> opAmrTree = amrTreeRepository.findById(input.getAmrTreeId());
@@ -904,5 +912,36 @@ public class AmrServiceImpl implements AmrService {
         result.add(new ExcelHeaderDTO("Amr label", ExcelStyleUtil.MEDIUM_SIZE));
         result.add(new ExcelHeaderDTO("Word label", ExcelStyleUtil.MEDIUM_SIZE));
         return result;
+    }
+
+    @Override
+    public ResponseDTO updateAmrStatus(Long treeId) {
+        try {
+            Optional<AmrTree> amrTreeOp = amrTreeRepository.findById(treeId);
+            if (amrTreeOp.isPresent()) {
+                AmrTree tree = amrTreeOp.get();
+                Integer currStatus = tree.getStatus();
+                if (currStatus == null) {
+                    tree.setStatus(MIN_STATUS);
+                    tree.setUpdateTime(new Date());
+                    amrTreeRepository.save(tree);
+                    return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", tree);
+                } else {
+                    if (MAX_STATUS == currStatus) {
+                        return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Tree is max status", null);
+                    } else {
+                        tree.setStatus(currStatus + 1);
+                        tree.setUpdateTime(new Date());
+                        amrTreeRepository.save(tree);
+                        return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", tree);
+                    }
+                }
+            } else {
+                return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Tree is not exist", null);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
+        }
     }
 }

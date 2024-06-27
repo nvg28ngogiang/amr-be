@@ -21,4 +21,6 @@ public interface AmrService {
     ResponseDTO importInsert(MultipartFile excelDataFile, Long importUserId, String username);
 
     String importTemplate();
+
+    ResponseDTO updateAmrStatus(Long treeId);
 }
