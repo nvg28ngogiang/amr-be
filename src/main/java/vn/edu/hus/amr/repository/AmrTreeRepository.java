@@ -26,7 +26,7 @@ public interface AmrTreeRepository extends JpaRepository<AmrTree, Long> {
             ") b on a.sentence_position = b.sentence_position")
     List<AmrTree> getByUserId(Long userId);
 
-    List<AmrTree> findBySentencePositionStartWithAndStatus(String beginSentencePosition, Integer status);
+    List<AmrTree> findBySentencePositionStartsWithAndStatus(String beginSentencePosition, Integer status);
 
-    List<AmrTree> findBySentencePositionStartWithAndStatusIn(String beginSentencePosition, List<Integer> statuses);
+    List<AmrTree> findBySentencePositionStartsWithAndStatusIn(String beginSentencePosition, List<Integer> statuses);
 }

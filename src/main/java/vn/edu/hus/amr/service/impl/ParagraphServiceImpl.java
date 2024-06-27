@@ -67,16 +67,20 @@ public class ParagraphServiceImpl implements ParagraphService {
             if (status == 1) {
                 List<Integer> otherStatuses = IntStream.rangeClosed(2, maxLevel).boxed().collect(Collectors.toList());
                 List<AmrTree> otherAmrTree = amrTreeRepository
-                        .findBySentencePositionStartWithAndStatusIn(paragraphPosition, otherStatuses);
+                        .findBySentencePositionStartsWithAndStatusIn(paragraphPosition, otherStatuses);
                 List<String> otherSentences = otherAmrTree.stream().map(AmrTree::getSentencePosition).collect(Collectors.toList());
-
-                sentences = paragraphRepository.getAllSentenceOfParagraphBySentencePositionNotIn(username, divId, paragraphId, otherSentences);
+                if (otherSentences == null || otherSentences.isEmpty()) {
+                    sentences = paragraphRepository.getAllSentenceOfParagraph(divId, paragraphId);
+                } else {
+                    sentences = paragraphRepository.getAllSentenceOfParagraphBySentencePositionNotIn(divId, paragraphId, otherSentences);
+                }
             } else {
                 List<AmrTree> anrTrees = amrTreeRepository
-                        .findBySentencePositionStartWithAndStatus(paragraphPosition, status);
+                        .findBySentencePositionStartsWithAndStatus(paragraphPosition, status);
                 List<String> sentencePositions = anrTrees.stream().map(AmrTree::getSentencePosition).collect(Collectors.toList());
-
-                sentences = paragraphRepository.getAllSentenceOfParagraphBySentencePositionIn(username, divId, paragraphId, sentencePositions);
+                if (sentencePositions != null && !sentencePositions.isEmpty()) {
+                    sentences = paragraphRepository.getAllSentenceOfParagraphBySentencePositionIn(divId, paragraphId, sentencePositions);
+                }
             }
 
 //            sentences = paragraphRepository.getAllSentenceOfParagraph(username, divId, paragraphId);
