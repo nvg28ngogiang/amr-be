@@ -1,5 +1,6 @@
 package vn.edu.hus.amr.repository.custom.impl;
 
+import org.springframework.beans.factory.annotation.Value;
 import vn.edu.hus.amr.dto.FormResult;
 import vn.edu.hus.amr.dto.ParagraphDTO;
 import vn.edu.hus.amr.dto.SentenceDTO;
@@ -26,6 +27,8 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
     private final EntityManager entityManager;
     private final UserRepository userRepository;
     private final AmrTreeRepository amrTreeRepository;
+    @Value("${sentence.status.max}")
+    private Integer MAX_STATUS;
 
     @Override
     public FormResult getParagraphPaging(String username, Integer first, Integer rows, Integer numOfWords, Integer level) {
@@ -183,7 +186,8 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
 
     @Override
     public List<SentenceDTO> getAllSentenceOfUserHaveAmr(Long userId) {
-        List<AmrTree> amrTrees = amrTreeRepository.getByUserId(userId);
+        final Integer MAX_LEVEL = MAX_STATUS - 1;
+        List<AmrTree> amrTrees = amrTreeRepository.getByUserIdAndStatusAndLevel(userId, MAX_STATUS, MAX_LEVEL   );
 
         List<SentenceDTO> result = new ArrayList<>();
         if (amrTrees != null && !amrTrees.isEmpty()) {

@@ -1,6 +1,7 @@
 package vn.edu.hus.amr.repository.custom.impl;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import vn.edu.hus.amr.dto.AmrDetailResponseDTO;
 import vn.edu.hus.amr.dto.FormResult;
 import vn.edu.hus.amr.dto.StatisticUserDTO;
@@ -23,6 +24,9 @@ import java.util.stream.Collectors;
 @Log4j2
 public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom {
     private final EntityManager entityManager;
+
+    @Value("${sentence.status.max}")
+    private Integer MAX_STATUS;
 
     @Override
     public FormResult getAmrDetail(String username, Long treeId) {
@@ -161,6 +165,8 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 "LEFT JOIN user_paragraph up ON w.div_id = up.div_id AND w.paragraph_id = up.paragraph_id " +
                 "left join app_user au on au.id = up.user_id " +
                 "   where au.id = :userId  " +
+                "   and at.status = " + MAX_STATUS +
+                "   and up.level = " + (MAX_STATUS - 1) +
                 "   order by " +
                 "   CAST(split_part(at.sentence_position, '/', 1) AS INTEGER), " +
                 "    CAST(split_part(at.sentence_position, '/', 2) AS INTEGER), " +
