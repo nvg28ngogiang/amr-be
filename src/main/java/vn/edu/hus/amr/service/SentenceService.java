@@ -6,4 +6,6 @@ public interface SentenceService {
     ResponseDTO getSentenceDetail(String username, Long divId, Long paragraphId, Long sentenceId);
 
     ResponseDTO getAmrTreeOfSentence(String username, Long divId, Long paragraphId, Long sentenceId);
+
+    ResponseDTO getLevelsAndStatus(String username, String sentencePosition);
 }

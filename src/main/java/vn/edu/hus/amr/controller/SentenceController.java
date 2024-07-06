@@ -30,4 +30,11 @@ public class SentenceController {
                                             @RequestParam("sentenceId") Long sentenceId ) {
         return sentenceService.getAmrTreeOfSentence(userDetails.getUsername(), divId, paragraphId, sentenceId);
     }
+
+
+    @GetMapping("/sentence")
+    public ResponseDTO getLevelsAndStatus(@AuthenticationPrincipal UserDetails userDetails,
+                                          @RequestParam("sentencePosition") String sentencePosition) {
+        return sentenceService.getLevelsAndStatus(userDetails.getUsername(), sentencePosition);
+    }
 }
