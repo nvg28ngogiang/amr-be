@@ -1,5 +1,6 @@
 package vn.edu.hus.amr.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import vn.edu.hus.amr.dto.ResponseDTO;
 import vn.edu.hus.amr.dto.UserParagraphDTO;
 import vn.edu.hus.amr.dto.WordRequestDTO;
@@ -10,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/paragraphs")
 @RequiredArgsConstructor
@@ -22,8 +24,9 @@ public class ParagraphController {
             @RequestParam(name = "first") Integer first,
             @RequestParam(name = "rows") Integer rows,
             @RequestParam(name = "numOfWords") Integer numOfWords,
-            @RequestParam(name = "level") Integer level
+            @RequestParam(name = "level", required = false) Integer level
     ) {
+        log.info("Get assigned paragraphs for current user");
         return paragraphService.getParagraphPagination(userDetails.getUsername(), first, rows, numOfWords, level);
     }
 
@@ -40,7 +43,7 @@ public class ParagraphController {
     public ResponseDTO getAllSentenceOfParagraph(@AuthenticationPrincipal UserDetails userDetails,
                                                  @RequestParam(name = "divId") Long divId,
                                                  @RequestParam(name = "paragraphId") Long paragraphId,
-                                                 @RequestParam(name = "status") Integer status
+                                                 @RequestParam(name = "status", required = false) Integer status
     ) {
         return paragraphService.getAllSentenceOfParagraph(userDetails.getUsername(), divId, paragraphId, status);
     }

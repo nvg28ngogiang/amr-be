@@ -64,12 +64,12 @@ public class ParagraphServiceImpl implements ParagraphService {
             List<SentenceDTO> sentences = new ArrayList<>();
             String paragraphPosition = divId + "/" + paragraphId + "/";
 
-            if (status == 1) {
+            if (status != null && status == 1) {
                 List<Integer> otherStatuses = IntStream.rangeClosed(2, maxLevel).boxed().collect(Collectors.toList());
                 List<AmrTree> otherAmrTree = amrTreeRepository
                         .findBySentencePositionStartsWithAndStatusIn(paragraphPosition, otherStatuses);
                 List<String> otherSentences = otherAmrTree.stream().map(AmrTree::getSentencePosition).collect(Collectors.toList());
-                if (otherSentences == null || otherSentences.isEmpty()) {
+                if (otherSentences.isEmpty()) {
                     sentences = paragraphRepository.getAllSentenceOfParagraph(divId, paragraphId);
                 } else {
                     sentences = paragraphRepository.getAllSentenceOfParagraphBySentencePositionNotIn(divId, paragraphId, otherSentences);
@@ -78,7 +78,7 @@ public class ParagraphServiceImpl implements ParagraphService {
                 List<AmrTree> anrTrees = amrTreeRepository
                         .findBySentencePositionStartsWithAndStatus(paragraphPosition, status);
                 List<String> sentencePositions = anrTrees.stream().map(AmrTree::getSentencePosition).collect(Collectors.toList());
-                if (sentencePositions != null && !sentencePositions.isEmpty()) {
+                if (!sentencePositions.isEmpty()) {
                     sentences = paragraphRepository.getAllSentenceOfParagraphBySentencePositionIn(divId, paragraphId, sentencePositions);
                 }
             }
