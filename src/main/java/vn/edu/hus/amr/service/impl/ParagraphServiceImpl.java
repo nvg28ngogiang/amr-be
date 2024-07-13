@@ -231,4 +231,14 @@ public class ParagraphServiceImpl implements ParagraphService {
             return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
         }
     }
+
+    public ResponseDTO deleteAssignee(List<Long> userParagraphIds) {
+        try {
+            userParagraphRepository.deleteAllById(userParagraphIds);
+            return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "SUCCESS", null);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), Constants.STATUS_CODE.ERROR, e.getMessage(), null);
+        }
+    }
 }
