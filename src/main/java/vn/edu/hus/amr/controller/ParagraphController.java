@@ -55,7 +55,7 @@ public class ParagraphController {
     @GetMapping("/assign-users")
     public ResponseDTO getAssignUsers(@RequestParam(name = "divId") Long divId,
                                       @RequestParam(name = "paragraphId") Long paragraphId,
-                                      @RequestParam(name = "level") Long level
+                                      @RequestParam(name = "level", required = false) Long level
     ) {
         return paragraphService.getAssignUsers(divId, paragraphId, level);
     }
