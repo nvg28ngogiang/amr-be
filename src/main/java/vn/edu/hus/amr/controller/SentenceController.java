@@ -32,7 +32,7 @@ public class SentenceController {
     }
 
 
-    @GetMapping("/sentence")
+    @GetMapping("/sentences/level")
     public ResponseDTO getLevelsAndStatus(@AuthenticationPrincipal UserDetails userDetails,
                                           @RequestParam("sentencePosition") String sentencePosition) {
         return sentenceService.getLevelsAndStatus(userDetails.getUsername(), sentencePosition);
