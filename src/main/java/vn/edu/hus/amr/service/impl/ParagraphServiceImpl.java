@@ -64,27 +64,30 @@ public class ParagraphServiceImpl implements ParagraphService {
             List<SentenceDTO> sentences = new ArrayList<>();
             String paragraphPosition = divId + "/" + paragraphId + "/";
 
-            if (status != null && status == 1) {
-                List<Integer> otherStatuses = IntStream.rangeClosed(2, maxLevel).boxed().collect(Collectors.toList());
-                List<AmrTree> otherAmrTree = amrTreeRepository
-                        .findBySentencePositionStartsWithAndStatusIn(paragraphPosition, otherStatuses);
-                List<String> otherSentences = otherAmrTree.stream().map(AmrTree::getSentencePosition).collect(Collectors.toList());
-                if (otherSentences.isEmpty()) {
-                    sentences = paragraphRepository.getAllSentenceOfParagraph(divId, paragraphId);
-                } else {
-                    sentences = paragraphRepository.getAllSentenceOfParagraphBySentencePositionNotIn(divId, paragraphId, otherSentences);
-                }
+            if (status == null) {
+                formResult = paragraphRepository.getAllSentenceOfParagraph(username, divId, paragraphId);
             } else {
-                List<AmrTree> anrTrees = amrTreeRepository
-                        .findBySentencePositionStartsWithAndStatus(paragraphPosition, status);
-                List<String> sentencePositions = anrTrees.stream().map(AmrTree::getSentencePosition).collect(Collectors.toList());
-                if (!sentencePositions.isEmpty()) {
-                    sentences = paragraphRepository.getAllSentenceOfParagraphBySentencePositionIn(divId, paragraphId, sentencePositions);
+                if (status == 1) {
+                    List<Integer> otherStatuses = IntStream.rangeClosed(2, maxLevel).boxed().collect(Collectors.toList());
+                    List<AmrTree> otherAmrTree = amrTreeRepository
+                            .findBySentencePositionStartsWithAndStatusIn(paragraphPosition, otherStatuses);
+                    List<String> otherSentences = otherAmrTree.stream().map(AmrTree::getSentencePosition).collect(Collectors.toList());
+                    if (otherSentences.isEmpty()) {
+                        sentences = paragraphRepository.getAllSentenceOfParagraph(divId, paragraphId);
+                    } else {
+                        sentences = paragraphRepository.getAllSentenceOfParagraphBySentencePositionNotIn(divId, paragraphId, otherSentences);
+                    }
+                } else {
+                    List<AmrTree> anrTrees = amrTreeRepository
+                            .findBySentencePositionStartsWithAndStatus(paragraphPosition, status);
+                    List<String> sentencePositions = anrTrees.stream().map(AmrTree::getSentencePosition).collect(Collectors.toList());
+                    if (!sentencePositions.isEmpty()) {
+                        sentences = paragraphRepository.getAllSentenceOfParagraphBySentencePositionIn(divId, paragraphId, sentencePositions);
+                    }
                 }
+                formResult.setContent(sentences);
             }
 
-//            sentences = paragraphRepository.getAllSentenceOfParagraph(username, divId, paragraphId);
-            formResult.setContent(sentences);
             return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", formResult);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
