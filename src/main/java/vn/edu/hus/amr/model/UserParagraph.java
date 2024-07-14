@@ -18,5 +18,7 @@ public class UserParagraph {
     private Long divId;
     @Column(name = "paragraph_id")
     private Long paragraphId;
+    @Column(name = "level")
+    private Long level;
 
 }

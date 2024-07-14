@@ -1,5 +1,6 @@
 package vn.edu.hus.amr.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import vn.edu.hus.amr.dto.ResponseDTO;
 import vn.edu.hus.amr.dto.UserParagraphDTO;
 import vn.edu.hus.amr.dto.WordRequestDTO;
@@ -9,7 +10,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/paragraphs")
 @RequiredArgsConstructor
@@ -21,9 +24,11 @@ public class ParagraphController {
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(name = "first") Integer first,
             @RequestParam(name = "rows") Integer rows,
-            @RequestParam(name = "numOfWords") Integer numOfWords
+            @RequestParam(name = "numOfWords") Integer numOfWords,
+            @RequestParam(name = "level", required = false) Integer level
     ) {
-        return paragraphService.getParagraphPagination(userDetails.getUsername(), first, rows, numOfWords);
+        log.info("Get assigned paragraphs for current user");
+        return paragraphService.getParagraphPagination(userDetails.getUsername(), first, rows, numOfWords, level);
     }
 
     @GetMapping("/all")
@@ -38,8 +43,10 @@ public class ParagraphController {
     @GetMapping(params = {"divId", "paragraphId"})
     public ResponseDTO getAllSentenceOfParagraph(@AuthenticationPrincipal UserDetails userDetails,
                                                  @RequestParam(name = "divId") Long divId,
-                                                 @RequestParam(name = "paragraphId") Long paragraphId) {
-        return paragraphService.getAllSentenceOfParagraph(userDetails.getUsername(), divId, paragraphId);
+                                                 @RequestParam(name = "paragraphId") Long paragraphId,
+                                                 @RequestParam(name = "status", required = false) Integer status
+    ) {
+        return paragraphService.getAllSentenceOfParagraph(userDetails.getUsername(), divId, paragraphId, status);
     }
 
     @PutMapping("/words/{id}/pos-label")
@@ -51,8 +58,10 @@ public class ParagraphController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/assign-users")
     public ResponseDTO getAssignUsers(@RequestParam(name = "divId") Long divId,
-                                      @RequestParam(name = "paragraphId") Long paragraphId) {
-        return paragraphService.getAssignUsers(divId, paragraphId);
+                                      @RequestParam(name = "paragraphId") Long paragraphId,
+                                      @RequestParam(name = "level", required = false) Long level
+    ) {
+        return paragraphService.getAssignUsers(divId, paragraphId, level);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -69,7 +78,13 @@ public class ParagraphController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/assign-users/delete")
-    public ResponseDTO deleteAssignusers(@RequestBody UserParagraphDTO input) {
+    public ResponseDTO deleteAssignusersByDTO(@RequestBody UserParagraphDTO input) {
         return paragraphService.deleteAssignee(input);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/assign-users/delete-by-id")
+    public ResponseDTO deleteAssignusersByList(@RequestBody List<Long> userParagraphIds) {
+        return paragraphService.deleteAssignee(userParagraphIds);
     }
 }

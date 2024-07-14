@@ -151,4 +151,9 @@ public class AmrController {
         }
         return null;
     }
+
+    @PostMapping("/amr/{treeId}/update-status")
+    public ResponseDTO updateAmrStatus(@PathVariable Long treeId) {
+        return amrService.updateAmrStatus(treeId);
+    }
 }
