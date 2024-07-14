@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -58,7 +59,7 @@ public class ParagraphController {
     @GetMapping("/assign-users")
     public ResponseDTO getAssignUsers(@RequestParam(name = "divId") Long divId,
                                       @RequestParam(name = "paragraphId") Long paragraphId,
-                                      @RequestParam(name = "level") Long level
+                                      @RequestParam(name = "level", required = false) Long level
     ) {
         return paragraphService.getAssignUsers(divId, paragraphId, level);
     }
@@ -77,7 +78,13 @@ public class ParagraphController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/assign-users/delete")
-    public ResponseDTO deleteAssignusers(@RequestBody UserParagraphDTO input) {
+    public ResponseDTO deleteAssignusersByDTO(@RequestBody UserParagraphDTO input) {
         return paragraphService.deleteAssignee(input);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/assign-users/delete-by-id")
+    public ResponseDTO deleteAssignusersByList(@RequestBody List<Long> userParagraphIds) {
+        return paragraphService.deleteAssignee(userParagraphIds);
     }
 }

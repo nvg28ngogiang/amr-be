@@ -230,11 +230,10 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
     @Override
     public FormResult getAssingUsers(Long divId, Long paragraphId, Long level) {
         FormResult result = new FormResult();
-        StringBuilder sql = generateAssignUsersSQL();
+        StringBuilder sql = generateAssignUsersSQL(level);
         Map<String, Object> params = new HashMap<>();
         params.put("divId", divId);
         params.put("paragraphId", paragraphId);
-        params.put("level", level);
         Query query = entityManager.createNativeQuery(sql.toString());
         if (params.size() > 0) {
             for (Map.Entry<String, Object> param : params.entrySet()) {
@@ -250,6 +249,8 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
             item.setId(Long.parseLong(obj[0].toString()));
             item.setUsername(obj[1] != null ? obj[1].toString() : "");
             item.setName(obj[2] != null ? obj[2].toString() : "");
+            item.setUserParagraphId(obj[3] != null ? Long.parseLong(obj[3].toString()) : null);
+            item.setLevel(obj[4] != null ? Long.parseLong(obj[4].toString()) : null);
             listResponse.add(item);
         }
         result.setContent(listResponse);
@@ -257,11 +258,15 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
         return result;
     }
 
-    private StringBuilder generateAssignUsersSQL() {
+    private StringBuilder generateAssignUsersSQL(Long level) {
         StringBuilder sql = new StringBuilder("select a.id, a.username as username, a.name " +
+                ", b.id as userParagraphId, b.level as level " +
                 "from app_user a " +
                 "join user_paragraph b on a.id = b.user_id  " +
-                "where b.div_id = :divId and b.paragraph_id = :paragraphId and b.level =:level");
+                "where b.div_id = :divId and b.paragraph_id = :paragraphId ");
+        if (level != null) {
+            sql.append("  and b.level = " + level);
+        }
         return sql;
     }
 }

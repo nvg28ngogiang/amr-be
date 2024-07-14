@@ -13,4 +13,6 @@ public class UserDataDTO {
     private List<AppUserRole> roles;
     private String name;
     private String token;
+    private Long userParagraphId;
+    private Long level;
 }

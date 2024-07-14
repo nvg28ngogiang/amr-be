@@ -4,6 +4,8 @@ import vn.edu.hus.amr.dto.ResponseDTO;
 import vn.edu.hus.amr.dto.UserParagraphDTO;
 import vn.edu.hus.amr.dto.WordRequestDTO;
 
+import java.util.List;
+
 public interface ParagraphService {
     ResponseDTO getParagraphPagination(String username,
                                        Integer first,
@@ -26,4 +28,6 @@ public interface ParagraphService {
     ResponseDTO addAssignee(UserParagraphDTO input);
 
     ResponseDTO deleteAssignee(UserParagraphDTO input);
+
+    public ResponseDTO deleteAssignee(List<Long> userParagraphIds);
 }

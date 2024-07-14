@@ -17,6 +17,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Repository
@@ -180,28 +182,76 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
     @Override
     public FormResult statisticUsers() {
         FormResult result = new FormResult();
-        StringBuilder sql = buildStatisticUserSQL();
-        Query query = entityManager.createNativeQuery(sql.toString());
 
-        NativeQueryImpl nativeQuery = (NativeQueryImpl) query;
-        nativeQuery.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
+        Map<String, Map<String, Object>> mapStatisticByUser = new HashMap<>();
+        Integer userId;
+        String username;
+        String name;
+        Long totalParagraph;
+        Long totalSentence;
+        Long totalAmr;
+        for (int level = 1; level < (MAX_STATUS); level++) {
+            StringBuilder sql = buildStatisticUserSQL(level);
+            Query query = entityManager.createNativeQuery(sql.toString());
 
-        List<Map<String, Object>> listObjMap = nativeQuery.getResultList();
-        Field[] fields = StatisticUserDTO.class.getDeclaredFields();
-        StatisticUserDTO item;
-        List<StatisticUserDTO> listResponse = new ArrayList<>();
-        for (Map<String, Object> objMap : listObjMap) {
-            item = new StatisticUserDTO();
-            CommonUtils.convertMapResultToObject(objMap, fields, item);
-            listResponse.add(item);
+            NativeQueryImpl nativeQuery = (NativeQueryImpl) query;
+            nativeQuery.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
+            List<Map<String, Object>> listObjMap = nativeQuery.getResultList();
+
+            for (Map<String, Object> objMap : listObjMap) {
+                userId = (Integer) objMap.remove("userId");
+                username = objMap.remove("username").toString();
+                name = objMap.remove("name").toString();
+                Map<String, Object> newObjMap = new HashMap<>();
+                for (Map.Entry<String, Object> entry : objMap.entrySet()) {
+                    newObjMap.put(entry.getKey() + level, entry.getValue());
+                }
+
+                if (mapStatisticByUser.containsKey(userId + "_" + username + "_" + name)) {
+                    Map<String, Object> prev = mapStatisticByUser.get(userId + "_" + username + "_" + name);
+                    prev.putAll(newObjMap);
+                } else {
+                    mapStatisticByUser.put(userId + "_" + username + "_" + name, newObjMap);
+                }
+            }
         }
 
-        result.setTotalElements(Long.valueOf(listResponse.size()));
-        result.setContent(listResponse);
+        List<Map<String, Object>> listData = new ArrayList<>();
+
+        for (Map.Entry<String, Map<String, Object>> entry : mapStatisticByUser.entrySet()) {
+            String key = entry.getKey();
+            String[] keySplit = key.split("_");
+            Map<String, Object> item = new HashMap<>();
+            item.put("userId", Integer.valueOf(keySplit[0]));
+            item.put("username", keySplit[1]);
+            item.put("name", keySplit[2]);
+            item.putAll(entry.getValue());
+            listData.add(item);
+        }
+        result.setContent(listData);
+
+//        StringBuilder sql = buildStatisticUserSQL();
+//        Query query = entityManager.createNativeQuery(sql.toString());
+//
+//        NativeQueryImpl nativeQuery = (NativeQueryImpl) query;
+//        nativeQuery.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
+//
+//        List<Map<String, Object>> listObjMap = nativeQuery.getResultList();
+//        Field[] fields = StatisticUserDTO.class.getDeclaredFields();
+//        StatisticUserDTO item;
+//        List<StatisticUserDTO> listResponse = new ArrayList<>();
+//        for (Map<String, Object> objMap : listObjMap) {
+//            item = new StatisticUserDTO();
+//            CommonUtils.convertMapResultToObject(objMap, fields, item);
+//            listResponse.add(item);
+//        }
+//
+//        result.setTotalElements(Long.valueOf(listResponse.size()));
+//        result.setContent(listResponse);
         return result;
     }
 
-    StringBuilder buildStatisticUserSQL() {
+    StringBuilder buildStatisticUserSQL(int level) {
 
         StringBuilder sql = new StringBuilder("select " +
                 "    a.id as \"userId\", a.username, a.name , " +
@@ -216,11 +266,13 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 "left join  " +
                 "(select count(*) as total_paragraph, user_id " +
                 "    from user_paragraph " +
+                "   where level = " + level +
                 "    group by user_id ) b on b.user_id = a.id " +
                 "left join  " +
                 "(select count(distinct concat('d', w.div_id, 'p', w.paragraph_id, 's', w.sentence_id)) as total_sentence, user_id  " +
                 "    from word w  " +
                 "    join user_paragraph up on w.div_id = up.div_id and w.paragraph_id = up.paragraph_id " +
+                "    where up.level = " + level +
                 "    group by up.user_id) c on a.id = c.user_id " +
                 "left join  " +
                 "(select count(at.id) as total_amr, temp.user_id " +
@@ -230,6 +282,7 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 "    from word w  " +
                 "    join user_paragraph up on w.div_id = up.div_id and w.paragraph_id = up.paragraph_id) " +
                 "    temp on at.sentence_position  = temp.sentence_position " +
+                "    where at.status = " + (level + 1) +
                 "    group by temp.user_id ) d on a.id = d.user_id");
 
         return sql;
