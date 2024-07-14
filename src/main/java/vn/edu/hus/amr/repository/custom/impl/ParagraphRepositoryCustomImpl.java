@@ -84,9 +84,9 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
         List<ParagraphDTO> listResponse = new ArrayList<>();
         for (Object[] obj : objs) {
             item = new ParagraphDTO();
-            item.setDivId(obj[0] != null ? Long.valueOf(obj[0].toString()) : null);
-            item.setParagraphId(obj[1] != null ? Long.valueOf(obj[1].toString()) : null);
-            item.setContent(obj[2] != null ? obj[2].toString() : "");
+            item.setDivId(obj[1] != null ? Long.valueOf(obj[1].toString()) : null);
+            item.setParagraphId(obj[2] != null ? Long.valueOf(obj[2].toString()) : null);
+            item.setContent(obj[3] != null ? obj[3].toString() : "");
             listResponse.add(item);
         }
         result.setContent(listResponse);
@@ -96,7 +96,8 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
 
     private StringBuilder generateGetPagingSQL(boolean isGetByUser, Integer level) {
         StringBuilder sql = new StringBuilder("select " +
-                "a.div_id as divId " +
+                "distinct(concat(a.div_id, '_', a.paragraph_id)) " +
+                ", a.div_id as divId " +
                 ", a.paragraph_id as paragraphId " +
                 ", a.content " +
                 " from " +
