@@ -108,9 +108,9 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
     }
 
     @Override
-    public FormResult getAmrDetailForExport(Long exportUserId) {
+    public FormResult getAmrDetailForExport(Long exportUserId, Integer role, Integer status) {
         FormResult result = new FormResult();
-        StringBuilder sql = buildAmrDetailForExportSQL();
+        StringBuilder sql = buildAmrDetailForExportSQL(role, status);
         Query query = entityManager.createNativeQuery(sql.toString());
         query.setParameter("userId", exportUserId);
 
@@ -148,7 +148,7 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
         return String.format("d%sp%ss%s", parts[0], parts[1], parts[2]);
     }
 
-    StringBuilder buildAmrDetailForExportSQL() {
+    StringBuilder buildAmrDetailForExportSQL(Integer role, Integer status) {
         StringBuilder sql = new StringBuilder("select w.id as \"wordId\", aw.parent_id as \"parentId\",  " +
                 "    w.content as \"wordContent\", aw.tree_id as \"treeId\",  " +
                 "    aw.amr_label_id as \"amrLabelId\", al.name as \"amrLabelContent\",  " +
@@ -167,8 +167,8 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 "LEFT JOIN user_paragraph up ON w.div_id = up.div_id AND w.paragraph_id = up.paragraph_id " +
                 "left join app_user au on au.id = up.user_id " +
                 "   where au.id = :userId  " +
-                "   and at.status = " + MAX_STATUS +
-                "   and up.level = " + (MAX_STATUS - 1) +
+                "   and at.status = " + status +
+                "   and up.level = " + role +
                 "   order by " +
                 "   CAST(split_part(at.sentence_position, '/', 1) AS INTEGER), " +
                 "    CAST(split_part(at.sentence_position, '/', 2) AS INTEGER), " +
