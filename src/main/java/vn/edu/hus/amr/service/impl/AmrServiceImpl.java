@@ -922,7 +922,7 @@ public class AmrServiceImpl implements AmrService {
                 AmrTree tree = amrTreeOp.get();
                 Integer currStatus = tree.getStatus();
                 if (currStatus == null) {
-                    tree.setStatus(MIN_STATUS);
+                    tree.setStatus(MIN_STATUS + 1);
                     tree.setUpdateTime(new Date());
                     amrTreeRepository.save(tree);
                     return new ResponseDTO(HttpStatus.OK.value(), Constants.STATUS_CODE.SUCCESS, "Success", tree);
