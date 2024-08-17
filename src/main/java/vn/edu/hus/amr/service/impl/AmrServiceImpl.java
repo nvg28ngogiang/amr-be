@@ -568,7 +568,7 @@ public class AmrServiceImpl implements AmrService {
 //            }
 //            List<vn.edu.hus.amr.dto.projection.SentenceDTO> sentenceDTOs = paragraphRepository.getAllSentenceOfUserHaveAmrTree(sentencePositions);
 
-            List<SentenceDTO> sentenceDTOs = paragraphRepository.getAllSentenceOfUserHaveAmr(exportUser.getId());
+            List<SentenceDTO> sentenceDTOs = paragraphRepository.getAllSentenceOfUserHaveAmr(exportUser.getId(), role, status);
             List<AmrDetailResponseDTO> allNodes = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(exportUser.getId(), role, status).getContent();
             List<SentenceAndAMRTree> sentenceAndAMRTrees = createSentenceAndAmrTrees(sentenceDTOs, allNodes);
             XWPFDocument doc = new XWPFDocument();
