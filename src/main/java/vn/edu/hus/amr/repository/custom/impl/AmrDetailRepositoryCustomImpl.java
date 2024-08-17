@@ -163,13 +163,29 @@ public class AmrDetailRepositoryCustomImpl implements AmrDetailRepositoryCustom 
                 "left join word pw on aw.parent_id = pw.id  " +
                 "left join amr_label al on aw.amr_label_id = al.id  " +
                 "left join word_sense ws on aw.word_sense_id = ws.id  " +
-                "left join amr_tree at on aw.tree_id = at.id  " +
-                "LEFT JOIN user_paragraph up ON w.div_id = up.div_id AND w.paragraph_id = up.paragraph_id " +
-                "left join app_user au on au.id = up.user_id " +
-                "   where au.id = :userId  " +
-                "   and at.status = " + status +
-                "   and up.level = " + role +
-                "   order by " +
+                "left join amr_tree at on aw.tree_id = at.id  ");
+
+        if (role == null) {
+            sql.append("LEFT JOIN (" +
+                            "SELECT DISTINCT tmp.user_id, tmp.div_id, tmp.paragraph_id FROM user_paragraph tmp" +
+                        ") up " +
+                        "ON w.div_id = up.div_id AND w.paragraph_id = up.paragraph_id ");
+        } else {
+            sql.append("LEFT JOIN (" +
+                            "SELECT tmp.user_id, tmp.div_id, tmp.paragraph_id FROM user_paragraph tmp " +
+                            "WHERE tmp.level = " + role +
+                     ") up " +
+                    "ON w.div_id = up.div_id AND w.paragraph_id = up.paragraph_id ");
+        }
+
+        sql.append("left join app_user au on au.id = up.user_id " +
+                    "   where au.id = :userId  ");
+
+        if (status != null) {
+            sql.append("   and at.status = ").append(status);
+        }
+
+        sql.append("   order by " +
                 "   CAST(split_part(at.sentence_position, '/', 1) AS INTEGER), " +
                 "    CAST(split_part(at.sentence_position, '/', 2) AS INTEGER), " +
                 "    CAST(split_part(at. sentence_position, '/', 3) AS INTEGER), " +
