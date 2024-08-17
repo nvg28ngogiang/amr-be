@@ -71,3 +71,7 @@ create table amr_label
 alter table amr_tree add update_time timestamp;
 
 alter table amr_word add english_sense varchar(1000);
+
+alter table user_paragraph add column level int2;
+
+alter table amr_tree add column status int2;

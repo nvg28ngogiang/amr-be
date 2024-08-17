@@ -32,9 +32,9 @@ public interface AmrTreeRepository extends JpaRepository<AmrTree, Long> {
             "   SELECT distinct(concat(w.div_id, '/', w.paragraph_id, '/', w.sentence_id)) as sentence_position " +
             "   FROM word w  " +
             "   JOIN user_paragraph up ON w.div_id = up.div_id AND w.paragraph_id = up.paragraph_id " +
-            "   WHERE up.user_id = :userId and up.level = :level" +
+            "   WHERE up.user_id = :userId and (:level IS NULL OR up.level = :level) " +
             ") b on a.sentence_position = b.sentence_position" +
-            " WHERE a.status =:status ")
+            " WHERE (:status IS NULL OR a.status =:status) ")
     List<AmrTree> getByUserIdAndStatusAndLevel(Long userId, Integer status, Integer level);
 
     List<AmrTree> findBySentencePositionStartsWithAndStatus(String beginSentencePosition, Integer status);

@@ -12,5 +12,5 @@ public interface ParagraphRepositoryCustom {
 
     FormResult getAssingUsers(Long divId, Long paragraphId, Long level);
 
-    List<SentenceDTO> getAllSentenceOfUserHaveAmr(Long userId);
+    List<SentenceDTO> getAllSentenceOfUserHaveAmr(Long userId, Integer role, Integer status);
 }

@@ -284,7 +284,7 @@ public class AmrServiceImpl implements AmrService {
         }
 
         String targetDirectory = "./report_out/amr_excel_data_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_HHmmss") + "/";
-        writeDataToExcelDirectory(targetDirectory, exportUsers);
+        writeDataToExcelDirectory(targetDirectory, exportUsers, input.getRole(), input.getStatus());
 
         // zip this target directory to file
         String targetZipFile = "./report_out/" + "AMR_TREE_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_HHmmss") + ".zip";
@@ -299,7 +299,7 @@ public class AmrServiceImpl implements AmrService {
         return targetZipFile;
     }
 
-    private void writeDataToExcelDirectory(String targetDirectory, List<AppUser> exportUsers) {
+    private void writeDataToExcelDirectory(String targetDirectory, List<AppUser> exportUsers, Integer role, Integer status) {
 //        List<WriterThread> threads = new ArrayList<>();
 //        for (AppUser exportUser : exportUsers) {
 //            threads.add(new WriterThread(exportUser, targetDirectory));
@@ -309,7 +309,7 @@ public class AmrServiceImpl implements AmrService {
 //        }
 
         for (AppUser exportUser : exportUsers) {
-            List<AmrDetailResponseDTO> listResponse = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(exportUser.getId()).getContent();
+            List<AmrDetailResponseDTO> listResponse = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(exportUser.getId(), role, status).getContent();
             if (listResponse == null) {
                 listResponse = new ArrayList<>();
             }
@@ -544,7 +544,7 @@ public class AmrServiceImpl implements AmrService {
         }
 
         String targetDirectory = "./report_out/amr_doc_data_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_HHmmss") + "/";
-        writeDataToDocDirectory(targetDirectory, exportUsers);
+        writeDataToDocDirectory(targetDirectory, exportUsers, input.getRole(), input.getStatus());
 
         // zip this target directory to file
         String targetZipFile = "./report_out/" + "AMR_TREE_" + CommonUtils.getStrDate(System.currentTimeMillis(), "ddMMyyyy_HHmmss") + ".zip";
@@ -559,7 +559,7 @@ public class AmrServiceImpl implements AmrService {
         return targetZipFile;
     }
 
-    private void writeDataToDocDirectory(String targetDirectory, List<AppUser> exportUsers) {
+    private void writeDataToDocDirectory(String targetDirectory, List<AppUser> exportUsers, Integer role, Integer status) {
         for (AppUser exportUser : exportUsers) {
 //            List<String> sentencePositions = new ArrayList<>();
 //            List<AmrTree> amrTrees = amrTreeRepository.getByUserId(exportUser.getId());
@@ -568,8 +568,8 @@ public class AmrServiceImpl implements AmrService {
 //            }
 //            List<vn.edu.hus.amr.dto.projection.SentenceDTO> sentenceDTOs = paragraphRepository.getAllSentenceOfUserHaveAmrTree(sentencePositions);
 
-            List<SentenceDTO> sentenceDTOs = paragraphRepository.getAllSentenceOfUserHaveAmr(exportUser.getId());
-            List<AmrDetailResponseDTO> allNodes = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(exportUser.getId()).getContent();
+            List<SentenceDTO> sentenceDTOs = paragraphRepository.getAllSentenceOfUserHaveAmr(exportUser.getId(), role, status);
+            List<AmrDetailResponseDTO> allNodes = (List<AmrDetailResponseDTO>) amrWordRepository.getAmrDetailForExport(exportUser.getId(), role, status).getContent();
             List<SentenceAndAMRTree> sentenceAndAMRTrees = createSentenceAndAmrTrees(sentenceDTOs, allNodes);
             XWPFDocument doc = new XWPFDocument();
             writeInDocFile(doc, sentenceAndAMRTrees, exportUser.getUsername());

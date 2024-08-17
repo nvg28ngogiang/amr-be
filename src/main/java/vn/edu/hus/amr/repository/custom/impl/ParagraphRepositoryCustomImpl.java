@@ -187,9 +187,9 @@ public class ParagraphRepositoryCustomImpl implements ParagraphRepositoryCustom 
     }
 
     @Override
-    public List<SentenceDTO> getAllSentenceOfUserHaveAmr(Long userId) {
-        final Integer MAX_LEVEL = MAX_STATUS - 1;
-        List<AmrTree> amrTrees = amrTreeRepository.getByUserIdAndStatusAndLevel(userId, MAX_STATUS, MAX_LEVEL   );
+    public List<SentenceDTO> getAllSentenceOfUserHaveAmr(Long userId, Integer role, Integer status) {
+//        final Integer MAX_LEVEL = MAX_STATUS - 1;
+        List<AmrTree> amrTrees = amrTreeRepository.getByUserIdAndStatusAndLevel(userId, status, role);
 
         List<SentenceDTO> result = new ArrayList<>();
         if (amrTrees != null && !amrTrees.isEmpty()) {
